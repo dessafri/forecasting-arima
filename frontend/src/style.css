@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+    font-family: 'Inter', sans-serif;
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+@layer components {
+  /* Style for Active Sidebar Route (Emerald Style) */
+  nav .router-link-exact-active {
+    @apply bg-emerald-50 text-[#0f3d32] font-semibold border-l-4 border-[#047857] shadow-sm transition-all !important;
+  }
+  nav .router-link-exact-active .material-symbols-outlined {
+    @apply text-[#047857] !important;
+  }
+  nav .router-link-exact-active span:not(.material-symbols-outlined) {
+    @apply font-semibold !important;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}

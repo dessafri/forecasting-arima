@@ -1,0 +1,39 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Design System & Temp Design Artifacts
+DESIGN_SYSTEM.md
+design/
+temp_restore/
+*.zip
+
+# User Acceptance Testing (UAT)
+uat/
+
+# Temporary Root Fixing Scripts
+*.py
+!backend/**/*.py
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+backend/venv/
+backend/__pycache__/
+.pytest_cache/
+
+# Node & Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database (optional local state)
+backend/forecasting.db

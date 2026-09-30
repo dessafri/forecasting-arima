@@ -1,0 +1,692 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-background":"#0b1c30","on-tertiary-fixed":"#2a1700","surface":"#f8f9ff","surface-tint":"#006c4a","on-surface-variant":"#3d4a42","on-secondary-fixed-variant":"#004b73","surface-container-highest":"#d3e4fe","on-error":"#ffffff","surface-container-lowest":"#ffffff","on-primary-container":"#f5fff7","surface-dim":"#cbdbf5","on-tertiary-fixed-variant":"#653e00","inverse-on-surface":"#eaf1ff","secondary-fixed":"#cce5ff","error":"#ba1a1a","outline-variant":"#bccac0","on-secondary-container":"#00476e","primary-fixed-dim":"#68dba9","error-container":"#ffdad6","inverse-surface":"#213145","tertiary-fixed":"#ffddb8","primary":"#006948","on-surface":"#0b1c30","inverse-primary":"#68dba9","secondary":"#006398","tertiary":"#825100","surface-variant":"#d3e4fe","primary-fixed":"#85f8c4","on-secondary":"#ffffff","on-primary-fixed-variant":"#005137","on-error-container":"#93000a","secondary-container":"#5bb8fe","background":"#f8f9ff","on-secondary-fixed":"#001d31","secondary-fixed-dim":"#93ccff","on-tertiary-container":"#fffbff","on-primary":"#ffffff","primary-container":"#00855d","surface-container":"#e5eeff","tertiary-container":"#a36700","tertiary-fixed-dim":"#ffb95f","surface-container-low":"#eff4ff","surface-container-high":"#dce9ff","on-primary-fixed":"#002114","on-tertiary":"#ffffff","outline":"#6d7a72","surface-bright":"#f8f9ff"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-xl":"2rem","space-xs":"0.25rem",gutter:"1.5rem","gutter-sm":"1rem","space-md":"1rem","space-sm":"0.5rem",margin:"2rem","margin-sm":"1rem","space-lg":"1.5rem"},fontFamily:{"headline-lg-mobile":["Inter"],"body-md":["Inter"],"headline-lg":["Inter"],"display-lg":["Inter"],"body-sm":["Inter"],"headline-sm":["Inter"],"label-md":["Inter"],"body-lg":["Inter"],"label-sm":["Inter"],"data-mono-lg":["JetBrains Mono"],"display-lg-mobile":["Inter"],"data-mono-md":["JetBrains Mono"],"headline-md":["Inter"],"data-mono-sm":["JetBrains Mono"]},fontSize:{"headline-lg-mobile":["22px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"600"}],"display-lg":["36px",{lineHeight:"44px",letterSpacing:"-0.025em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"18px",letterSpacing:"0.01em",fontWeight:"400"}],"headline-sm":["16px",{lineHeight:"24px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"400"}],"label-sm":["10px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"600"}],"data-mono-lg":["24px",{lineHeight:"32px",letterSpacing:"-0.02em",fontWeight:"600"}],"display-lg-mobile":["28px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"700"}],"data-mono-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"500"}],"headline-md":["20px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],"data-mono-sm":["12px",{lineHeight:"16px",letterSpacing:"0em",fontWeight:"400"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface" style="font-family: Poppins, sans-serif;"><aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="p-space-lg flex items-center gap-space-sm"><img alt="NutriCast Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VYE4F5DaZXJhD3uKNDa6lY7zAzvs3iJJj6Wx3rWtu7d6q3eoXLHB1q6IVFfKiCoSZ6uA1UNopGqMZokvrvwSopTQEMD6mIAlkqfy69AQraFK4ysQEPVMIq4ajJxwoF9XlTHS-QUE1bT9xUHUs8aiiImkCqadSFflXDp5nz8VxB-9Vc7VcYOfZBmWn466Uj-0SJ1GS-i0j_0atcQZwhdwh4YyFhvOQ4xWHo6OM-7ltEL1_eUepkSPBKrVUJ"><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">NutriCast</span></div><span class="font-data-mono-sm text-data-mono-sm text-primary-container px-1.5 py-0.5 rounded bg-surface-container-highest self-start font-medium">v1.0 (ARIMA-FPR-GWO)</span></div></div><div class="px-space-md py-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider px-space-sm">Modul &amp; Analitik</span></div><nav class="flex flex-col gap-1 px-space-md" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="ringkasan-dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-body-md text-body-md">Ringkasan &amp; Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="manajemen-dataset" href="#"><span class="material-symbols-outlined text-[20px]">database</span><span class="font-body-md text-body-md">Modul 1: Manajemen Dataset</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="forecasting-arima" href="#"><span class="material-symbols-outlined text-[20px]">trending_up</span><span class="font-body-md text-body-md">Modul 2: Forecasting ARIMA</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="financial-pattern" href="#"><span class="material-symbols-outlined text-[20px]">insights</span><span class="font-body-md text-body-md">Modul 3: Financial Pattern (FPR)</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="optimasi-gwo" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-body-md text-body-md">Modul 4: Optimasi GWO</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="menu-pmt-export" href="#"><span class="material-symbols-outlined text-[20px]">restaurant_menu</span><span class="font-body-md text-body-md">Modul 5: Menu PMT &amp; Export</span></a><div class="pt-space-sm mt-space-xs"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider px-space-sm">Sistem &amp; Validasi</span></div><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="evaluasi-diagnostik-model" href="#"><span class="material-symbols-outlined text-[20px]">fact_check</span><span class="font-body-md text-body-md">Evaluasi &amp; Diagnostik Model</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="pengaturan-target-akg" href="#"><span class="material-symbols-outlined text-[20px]">settings_input_component</span><span class="font-body-md text-body-md">Pengaturan Target AKG</span></a></nav></div><div class="p-space-md m-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Engine Pipeline</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span></span></div><div class="flex items-center gap-space-xs bg-surface-container-lowest px-2 py-1 rounded"><span class="material-symbols-outlined text-[16px] text-primary">bolt</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface">FastAPI: <span class="text-primary font-semibold">Online</span></span></div><div class="flex items-center gap-space-xs bg-surface-container-lowest px-2 py-1 rounded"><span class="material-symbols-outlined text-[16px] text-secondary">sync</span><span class="font-data-mono-sm text-data-mono-sm text-on-surface">Celery: <span class="text-secondary font-semibold">Ready</span></span></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-xl gap-space-md"><div class="flex items-center gap-space-md flex-1"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px]">folder</span><span class="">Dashboard</span><span class="text-outline-variant">/</span><span class="text-on-surface font-medium">Ringkasan Pipeline &amp; Analitik</span></div><div class="hidden xl:flex items-center bg-surface-container-low px-space-sm py-1.5 rounded-lg w-72 focus-within:ring-2 focus-within:ring-primary"><span class="material-symbols-outlined text-[18px] text-on-surface-variant mr-2">search</span><input class="bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline w-full" placeholder="Cari komoditas, model, AKG..." type="text"></div></div><div class="flex items-center gap-space-md shrink-0"><div class="hidden md:flex items-center gap-1.5 bg-surface-container-low px-2.5 py-1 rounded-full text-secondary font-medium font-data-mono-sm text-data-mono-sm"><span class="material-symbols-outlined text-[16px]">calendar_today</span><span class="">Data Pangan: Jan 2024 - Mar 2024</span></div><div class="hidden lg:flex items-center gap-1.5 bg-surface-container-highest px-2.5 py-1 rounded-full text-primary font-medium font-data-mono-sm text-data-mono-sm"><span class="material-symbols-outlined text-[16px]">verified</span><span class="">Dataset: TKPI &amp; 8 Komoditas Valid</span></div><button aria-label="Notifikasi Pipeline" class="relative p-1.5 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="flex flex-col text-right hidden sm:flex"><span class="font-label-md text-label-md text-on-surface font-semibold">Dr. Aisyah Putri, M.Gizi</span><span class="font-label-sm text-label-sm text-on-surface-variant">Ahli Gizi Puskesmas &amp; Satgas Stunting</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKM0S0dwrLcXT7FROHaXxoe03z4GaljYRw78N7MTnRlvP32P1idM8rkJdWSa2P8YotcbXafjhvhj7KdZtDexyYk2G4lysgLrhEUbHXOlrXVxISxASNMJmOasA6lFCy0Gscneth08HObliA-S0VJhHBQPV6KpxqBj-Yp7IDHnhOyzvz45dU6hyPu-tzZoOp_YY4RwWrPta8JQUXsNqjmwR50VWOnw47a5rUyvAE4-FueqSorEogmXwLAg"></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="w-full max-w-[1440px] mx-auto p-space-xl"><div class="flex flex-col w-full gap-space-xl">
+<!-- 1. HEADER DASHBOARD -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1 max-w-3xl">
+<div class="flex items-center gap-space-xs text-primary">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span class="font-label-md text-label-md tracking-wider uppercase">Konsol Prediksi &amp; Intervensi Terpadu</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">
+        Sistem Peramalan Harga Pangan &amp; Optimasi Menu Nutrisi
+      </h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Platform analitik prediktif multivariat ARIMA-FPR dan metaheuristik Grey Wolf Optimizer untuk formulasi menu PMT pencegahan stunting presisi dan hemat biaya.
+      </p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap shrink-0">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high text-secondary hover:bg-surface-container-highest transition-colors font-body-md text-body-md font-semibold flex items-center gap-space-xs shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+<span class="">Unduh Laporan Ringkas (.PDF)</span>
+</button>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all font-body-md text-body-md font-semibold flex items-center gap-space-xs shadow-md shadow-primary/20 active:scale-95" id="btn-run-gwo" type="button">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span class="">Jalankan Ulang Pipeline (Run GWO)</span>
+</button>
+</div>
+</div>
+<!-- 2. PIPELINE STEPPER (5 Langkah Interaktif) -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">account_tree</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Alur Pipeline Eksekusi Algoritma</span>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm text-primary bg-surface-container-low px-2.5 py-1 rounded-full font-medium">Status: Iterasi Selesai (100%)</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-5 gap-space-md relative">
+<!-- Step 1 -->
+<div class="flex flex-col gap-2 p-3 bg-surface-container-low rounded-xl relative group">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-data-mono-sm text-data-mono-sm font-bold">1</span>
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Upload &amp; Preprocessing</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Data 8 komoditas + TKPI bersih &amp; interpolasi linear</div>
+<div class="mt-1 flex items-center gap-1 font-data-mono-sm text-data-mono-sm text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 2.450 Baris Valid
+        </div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col gap-2 p-3 bg-surface-container-low rounded-xl relative group">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-data-mono-sm text-data-mono-sm font-bold">2</span>
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">ARIMA &amp; Evaluasi</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Auto-fit best order, MAPE teruji 3.42% (Sangat Baik)</div>
+<div class="mt-1 flex items-center gap-1 font-data-mono-sm text-data-mono-sm text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> AIC Min: 412.3
+        </div>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col gap-2 p-3 bg-surface-container-low rounded-xl relative group">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-data-mono-sm text-data-mono-sm font-bold">3</span>
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Analisis Pola FPR</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Daily return &amp; matriks volatilitas terpetakan</div>
+<div class="mt-1 flex items-center gap-1 font-data-mono-sm text-data-mono-sm text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 3 Bull, 2 Bear, 3 Flat
+        </div>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col gap-2 p-3 bg-surface-container-low rounded-xl relative group">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-data-mono-sm text-data-mono-sm font-bold">4</span>
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Optimasi GWO Menu</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">50 Serigala / 300 Iterasi konvergen sempurna</div>
+<div class="mt-1 flex items-center gap-1 font-data-mono-sm text-data-mono-sm text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Alpha Fit: 0.0142
+        </div>
+</div>
+<!-- Step 5 -->
+<div class="flex flex-col gap-2 p-3 bg-primary text-on-primary rounded-xl relative shadow-sm">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-on-primary text-primary flex items-center justify-center font-data-mono-sm text-data-mono-sm font-bold">5</span>
+<span class="material-symbols-outlined text-on-primary text-[18px]">download_for_offline</span>
+</div>
+<div class="font-label-md text-label-md font-semibold">Hasil &amp; Export PMT</div>
+<div class="font-body-sm text-body-sm opacity-90">Formulasi menu siap sebar &amp; terverifikasi klinis</div>
+<div class="mt-1 flex items-center gap-1 font-data-mono-sm text-data-mono-sm text-primary-fixed font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed"></span> Siap Diunduh
+        </div>
+</div>
+</div>
+</div>
+<!-- 3. JALUR KPI & METRIC CARDS (4 Kolom Grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Estimasi Biaya Menu Harian</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-data-mono-lg text-data-mono-lg text-on-surface font-bold">Rp 8.450</span>
+<span class="font-label-sm text-label-sm text-primary bg-surface-container-highest px-2 py-0.5 rounded font-semibold">-12.4%</span>
+</div>
+</div>
+<div class="mt-4 pt-3 bg-surface-container-low/40 px-2 py-1.5 rounded-lg flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Basis 8 komoditas lokal</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-medium">Hemat Rp 1.200</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Total Energi PMT (Balita)</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-data-mono-lg text-data-mono-lg text-on-surface font-bold">1.352 <span class="font-body-md text-body-md font-normal text-on-surface-variant">kkal</span></span>
+<span class="font-label-sm text-label-sm text-primary bg-surface-container-highest px-2 py-0.5 rounded font-semibold">OPTIMAL</span>
+</div>
+</div>
+<div class="mt-4 pt-3 bg-surface-container-low/40 px-2 py-1.5 rounded-lg flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">100.1% dari target 1.350 kkal</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-medium">+2 kkal/hari</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Akurasi Prediksi 8 Komoditas</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-data-mono-lg text-data-mono-lg text-secondary font-bold">3.42%</span>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-2 py-0.5 rounded font-semibold">MAPE &lt;10%</span>
+</div>
+</div>
+<div class="mt-4 pt-3 bg-surface-container-low/40 px-2 py-1.5 rounded-lg flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Walk-forward validation</span>
+<span class="font-data-mono-sm text-data-mono-sm text-secondary font-medium">10-Fold split</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Fitness Alpha Wolf (GWO)</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-data-mono-lg text-data-mono-lg text-primary font-bold">0.0142</span>
+<span class="font-label-sm text-label-sm text-primary bg-surface-container-highest px-2 py-0.5 rounded font-semibold">Iterasi 184</span>
+</div>
+</div>
+<div class="mt-4 pt-3 bg-surface-container-low/40 px-2 py-1.5 rounded-lg flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Run #10 / 10 replikasi</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-medium">Seed: 42</span>
+</div>
+</div>
+</div>
+<!-- 4. NUTRITION COMPLIANCE GAUGE (Section Khusus AKG Balita) -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Indikator Pemenuhan Angka Kecukupan Gizi (AKG) Balita</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm font-semibold">STATUS: SESUAI STANDAR KEMENKES</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Target rujukan Peraturan Menteri Kesehatan RI untuk pencegahan stunting pada rentang usia 24-59 bulan.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap text-body-sm font-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-primary"></span>
+<span class="text-on-surface-variant">Optimal (95-105%)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-tertiary"></span>
+<span class="text-on-surface-variant">Toleransi (80-94% / 106-120%)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-error"></span>
+<span class="text-on-surface-variant">Defisit / Berlebih (&lt;80% / &gt;120%)</span>
+</div>
+</div>
+</div>
+<!-- 4 Gauge Progress Bars -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md pt-2">
+<!-- Nutrisi 1: Energi -->
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Energi Total</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-semibold">100.1%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all" style="width: 100.1%;"></div>
+</div>
+<div class="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+<span class="font-data-mono-sm text-data-mono-sm font-medium text-on-surface">1.352 kkal</span>
+<span class="">Target: 1.350 kkal</span>
+</div>
+</div>
+<!-- Nutrisi 2: Protein -->
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Protein</span>
+<span class="material-symbols-outlined text-[14px] text-primary" title="Kunci pencegahan stunting linier">star</span>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-semibold">104.0%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all" style="width: 104%;"></div>
+</div>
+<div class="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+<span class="font-data-mono-sm text-data-mono-sm font-medium text-on-surface">20.8 g</span>
+<span class="">Target: 20.0 g</span>
+</div>
+</div>
+<!-- Nutrisi 3: Lemak -->
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Lemak Sehat</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-semibold">96.9%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all" style="width: 96.9%;"></div>
+</div>
+<div class="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+<span class="font-data-mono-sm text-data-mono-sm font-medium text-on-surface">43.6 g</span>
+<span class="">Target: 45.0 g</span>
+</div>
+</div>
+<!-- Nutrisi 4: Karbohidrat -->
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Karbohidrat</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-semibold">101.6%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all" style="width: 100%;"></div>
+</div>
+<div class="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+<span class="font-data-mono-sm text-data-mono-sm font-medium text-on-surface">218.4 g</span>
+<span class="">Target: 215.0 g</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 5. SECTION UTAMA FORECASTING ARIMA (Multi-Series Line Chart) -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
+<!-- Chart Header & Controls -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">show_chart</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Proyeksi Tren Harga Komoditas Pangan (ARIMA 30-Hari ke Depan)</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Kombinasi data historis riil (30 hari terakhir) vs model peramalan Box-Jenkins dengan pita konfidensi 95%.</p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<!-- Commodity Select -->
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Komoditas:</span>
+<select class="bg-transparent font-body-sm text-body-sm text-on-surface font-medium border-none outline-none cursor-pointer" id="commodity-select">
+<option selected="" value="beras">Beras Premium (Rp 14.350)</option>
+<option value="ayam">Daging Ayam Ras (Rp 36.500)</option>
+<option value="telur">Telur Ayam Ras (Rp 29.200)</option>
+<option value="ikan">Ikan Kembung (Rp 38.000)</option>
+<option value="wortel">Wortel Lokal (Rp 12.500)</option>
+</select>
+</div>
+<!-- Controls Toggles -->
+<label class="flex items-center gap-2 cursor-pointer bg-surface-container-low px-3 py-1.5 rounded-lg select-none">
+<input checked="" class="accent-primary w-4 h-4 rounded" id="toggle-ci" type="checkbox">
+<span class="font-label-md text-label-md text-on-surface">CI 95%</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer bg-surface-container-low px-3 py-1.5 rounded-lg select-none">
+<input checked="" class="accent-secondary w-4 h-4 rounded" id="toggle-split" type="checkbox">
+<span class="font-label-md text-label-md text-on-surface">Split Horizon</span>
+</label>
+</div>
+</div>
+<!-- Chart Canvas + Diagnostic Side Panels -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-md items-start">
+<!-- Main SVG Chart Container -->
+<div class="xl:col-span-9 bg-surface-container-low/50 p-space-md rounded-xl flex flex-col gap-3">
+<!-- SVG Graphic -->
+<div class="w-full h-80 relative overflow-hidden flex items-center justify-center">
+<svg class="w-full h-full text-primary select-none" preserveAspectRatio="none" viewBox="0 0 800 320">
+<defs>
+<linearGradient id="ciGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#006398" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#006398" stop-opacity="0.03"></stop>
+</linearGradient>
+<linearGradient id="histGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#006948" stop-opacity="0.15"></stop>
+<stop offset="100%" stop-color="#006948" stop-opacity="0.0"></stop>
+</linearGradient>
+</defs>
+<!-- Horizontal Guide Lines -->
+<line stroke="#bccac0" stroke-dasharray="4,4" stroke-opacity="0.3" x1="40" x2="780" y1="40" y2="40"></line>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="44">14.8k</text>
+<line stroke="#bccac0" stroke-dasharray="4,4" stroke-opacity="0.3" x1="40" x2="780" y1="100" y2="100"></line>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="104">14.6k</text>
+<line stroke="#bccac0" stroke-dasharray="4,4" stroke-opacity="0.3" x1="40" x2="780" y1="160" y2="160"></line>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="164">14.4k</text>
+<line stroke="#bccac0" stroke-dasharray="4,4" stroke-opacity="0.3" x1="40" x2="780" y1="220" y2="220"></line>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="224">14.2k</text>
+<line stroke="#bccac0" stroke-opacity="0.3" x1="40" x2="780" y1="280" y2="280"></line>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="35" y="284">14.0k</text>
+<!-- Split Horizon Line (x=410) -->
+<g id="split-line-group">
+<line stroke="#ba1a1a" stroke-dasharray="5,5" stroke-width="1.5" x1="410" x2="410" y1="20" y2="280"></line>
+<rect fill="#ffdad6" height="18" rx="4" width="100" x="360" y="22"></rect>
+<text fill="#93000a" font-family="Inter" font-size="9" font-weight="600" text-anchor="middle" x="410" y="34">SPLIT (T-0 Hari Ini)</text>
+</g>
+<!-- Historical Area (x: 40 -> 410) -->
+<polygon fill="url(#histGradient)" points="40,240 70,235 110,225 150,230 190,215 230,205 270,195 310,210 350,185 380,180 410,175 410,280 40,280"></polygon>
+<!-- Historical Solid Line -->
+<polyline fill="none" points="40,240 70,235 110,225 150,230 190,215 230,205 270,195 310,210 350,185 380,180 410,175" stroke="#006948" stroke-linecap="round" stroke-width="2.5"></polyline>
+<!-- Confidence Interval Area Ribbon (P10-P90) (x: 410 -> 780) -->
+<polygon fill="url(#ciGradient)" id="ci-polygon" points="410,175 460,150 510,140 560,125 610,110 660,95 720,80 780,70 780,245 720,235 660,225 610,220 560,210 510,200 460,190 410,175"></polygon>
+<!-- Forecast Projection Dashed Line (x: 410 -> 780) -->
+<polyline fill="none" points="410,175 460,170 510,165 560,158 610,150 660,145 720,138 780,132" stroke="#006398" stroke-dasharray="6,6" stroke-linecap="round" stroke-width="2.5"></polyline>
+<!-- Point Indicators & Tooltip Simulation -->
+<circle cx="410" cy="175" fill="#006948" r="4.5" stroke="#ffffff" stroke-width="2"></circle>
+<circle cx="610" cy="150" fill="#006398" r="4.5" stroke="#ffffff" stroke-width="2"></circle>
+<!-- Tooltip Card at Day +15 -->
+<g transform="translate(565, 80)">
+<rect fill="#213145" height="52" opacity="0.95" rx="6" width="130" x="0" y="0"></rect>
+<text fill="#eaf1ff" font-family="Inter" font-size="10" font-weight="600" x="10" y="18">Hari ke +15 Prediksi</text>
+<text fill="#85f8c4" font-family="JetBrains Mono" font-size="12" font-weight="700" x="10" y="32">Rp 14.450 / kg</text>
+<text fill="#bccac0" font-family="Inter" font-size="9" x="10" y="44">CI: [14.280 - 14.620]</text>
+</g>
+<!-- Bottom X-Axis Markers -->
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" x="40" y="300">T-30 Hari</text>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" x="220" y="300">T-15 Hari</text>
+<text fill="#ba1a1a" font-family="JetBrains Mono" font-size="10" font-weight="700" x="410" y="300">Hari Ini</text>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" x="600" y="300">T+15 Hari</text>
+<text fill="#3d4a42" font-family="JetBrains Mono" font-size="10" text-anchor="end" x="760" y="300">T+30 Hari</text>
+</svg>
+</div>
+<!-- Legend Ribbon -->
+<div class="flex items-center justify-between flex-wrap gap-2 pt-2 text-body-sm font-body-sm">
+<div class="flex items-center gap-4 flex-wrap">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-0.5 bg-primary"></span>
+<span class="text-on-surface">Data Historis Aktual</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-0.5 border-t-2 border-dashed border-secondary"></span>
+<span class="text-on-surface">ARIMA Forecast (h=30)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 bg-secondary/20 rounded-sm"></span>
+<span class="text-on-surface-variant">Pita Keyakinan 95% (CI)</span>
+</div>
+</div>
+<div class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">
+            Horizon: <span class="font-semibold text-on-surface">30 Hari ke Depan</span>
+</div>
+</div>
+</div>
+<!-- ARIMA Diagnostic Stats & Test Sidecards -->
+<div class="xl:col-span-3 flex flex-col gap-space-sm">
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Uji ADF (Stationarity)</span>
+<div class="flex items-baseline justify-between">
+<span class="font-data-mono-md text-data-mono-md font-bold text-primary">-3.842</span>
+<span class="font-label-sm text-label-sm text-primary bg-surface-container-highest px-2 py-0.5 rounded font-semibold">p &lt; 0.01</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Data stasioner pada first difference (d=1), siap diestimasi ARIMA.</p>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Best Order (AIC Min)</span>
+<div class="flex items-baseline justify-between">
+<span class="font-data-mono-md text-data-mono-md font-bold text-on-surface">ARIMA(1, 1, 2)</span>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">AIC: 412.3</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Lag AR: 1, Differencing: 1, Lag MA: 2 memenuhi prinsip parsimoni.</p>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Uji Ljung-Box (Residual)</span>
+<div class="flex items-baseline justify-between">
+<span class="font-data-mono-md text-data-mono-md font-bold text-secondary">0.412</span>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-2 py-0.5 rounded font-semibold">White Noise OK</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Residual berdistribusi normal identik independen (tidak ada autokorelasi tersisa).</p>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Evaluasi Akurasi (MAPE)</span>
+<div class="flex items-baseline justify-between">
+<span class="font-data-mono-md text-data-mono-md font-bold text-primary">3.42%</span>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-semibold">RMSE: Rp 184</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Akurasi klasifikasi masuk kategori 'Sangat Baik' (MAPE &lt; 10%).</p>
+</div>
+</div>
+</div>
+</div>
+<!-- 6. GRID DUA KOLOM: FINANCIAL PATTERN (FPR) & OPTIMASI GWO MENU -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Kolom Kiri: Tabel Klasifikasi Tren Finansial (FPR) -->
+<div class="lg:col-span-7 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">insights</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tabel Klasifikasi Tren Finansial (FPR)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Daily return, volatilitas, dan rekomendasi kuantitas bobot GWO.</p>
+</div>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">8 Komoditas Pangan</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-2.5 px-3 rounded-l-lg">Komoditas</th>
+<th class="py-2.5 px-2">Harga Riil</th>
+<th class="py-2.5 px-2">Return</th>
+<th class="py-2.5 px-2">Volatilitas</th>
+<th class="py-2.5 px-2">Pola FPR</th>
+<th class="py-2.5 px-3 rounded-r-lg text-right">GWO Action</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="">Beras Premium</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 14.350</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-primary">+0.12%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">0.45%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">Stabil</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Porsi Pokok</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="">Daging Ayam Ras</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 36.500</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-tertiary">+0.85%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">1.82%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-semibold">Bullish</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">Substitusi Parsial</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span class="">Telur Ayam Ras</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 29.200</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-primary">-0.32%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">0.94%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">Bearish</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Tingkatkan Bobot</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="">Ikan Kembung</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 38.000</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-primary">+0.21%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">1.15%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">Stabil</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Prioritas Protein</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="">Daging Sapi Murni</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 134.000</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-on-surface-variant">+0.05%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">0.38%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">Stabil Tinggi</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-outline font-medium">Minimalkan (Cost)</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="">Wortel Lokal</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 12.500</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-primary">-0.74%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">2.10%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">Bearish</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Maksimal Vit A</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="">Kentang Sedang</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 16.000</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-tertiary">+0.40%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">1.05%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm font-semibold">Bullish</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Porsi Imbang</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="">Buncis Segar</span>
+</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">Rp 14.800</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm text-primary">-0.15%</td>
+<td class="py-2.5 px-2 font-data-mono-sm text-data-mono-sm">1.40%</td>
+<td class="py-2.5 px-2">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">Stabil</span>
+</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Serat Mikro</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Kolom Kanan: Formulasi Porsi Menu PMT Balita Hasil GWO (Multi-Objektif) -->
+<div class="lg:col-span-5 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">restaurant_menu</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Formulasi Menu PMT (GWO)</h2>
+</div>
+<span class="font-data-mono-sm text-data-mono-sm text-primary font-bold bg-surface-container-highest px-2 py-0.5 rounded">1 Porsi / Hari</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Solusi kompromi optimal: biaya minimal dengan pemenuhan 100% nutrisi balita.</p>
+</div>
+<!-- Ingredient Visual Proportion Bar -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span class="">Komposisi Gramatur (Total 270g)</span>
+<span class="font-data-mono-sm text-data-mono-sm font-medium text-primary">Protein Hewani: 120g</span>
+</div>
+<div class="w-full h-3 rounded-full bg-surface-container-low flex overflow-hidden">
+<div class="bg-secondary" style="width: 24%;" title="Beras (65g)"></div>
+<div class="bg-secondary-container" style="width: 19%;" title="Telur (50g)"></div>
+<div class="bg-primary" style="width: 15%;" title="Ikan Kembung (40g)"></div>
+<div class="bg-tertiary" style="width: 11%;" title="Ayam (30g)"></div>
+<div class="bg-outline" style="width: 17%;" title="Kentang (45g)"></div>
+<div class="bg-tertiary-fixed-dim" style="width: 14%;" title="Sayur (60g)"></div>
+</div>
+</div>
+<!-- Formulasi Mini List -->
+<div class="flex flex-col gap-1.5 font-body-sm text-body-sm">
+<div class="flex items-center justify-between py-1 px-2 rounded bg-surface-container-low/40">
+<span class="text-on-surface font-medium">Beras Premium</span>
+<div class="flex items-center gap-3">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">65 g</span>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Rp 932</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded bg-surface-container-low/40">
+<span class="text-on-surface font-medium">Telur Ayam Ras (1 butir)</span>
+<div class="flex items-center gap-3">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">50 g</span>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Rp 1.460</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded bg-surface-container-low/40">
+<span class="text-on-surface font-medium">Ikan Kembung Segar</span>
+<div class="flex items-center gap-3">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">40 g</span>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Rp 1.520</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded bg-surface-container-low/40">
+<span class="text-on-surface font-medium">Daging Ayam Ras</span>
+<div class="flex items-center gap-3">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">30 g</span>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Rp 1.095</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded bg-surface-container-low/40">
+<span class="text-on-surface font-medium">Kentang &amp; Sayuran (Wortel, Buncis)</span>
+<div class="flex items-center gap-3">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">105 g</span>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Rp 1.527</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded bg-surface-container-low/40">
+<span class="text-on-surface font-medium">Minyak Kelapa / Lemak Sehat</span>
+<div class="flex items-center gap-3">
+<span class="font-data-mono-sm text-data-mono-sm text-on-surface-variant">5 g</span>
+<span class="font-data-mono-sm text-data-mono-sm font-semibold text-on-surface">Rp 150</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 mt-1 px-2 bg-surface-container-highest rounded-lg">
+<span class="font-label-md text-label-md text-primary font-bold">TOTAL BIAYA BERSIH PMT</span>
+<span class="font-data-mono-md text-data-mono-md font-bold text-primary">Rp 8.450 / hari</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full py-2.5 px-4 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-secondary font-body-md text-body-md font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.99]" type="button">
+<span class="material-symbols-outlined text-[18px]">table_view</span>
+<span class="">Ekspor Resep &amp; Format PMT Posyandu (.xlsx / .pdf)</span>
+</button>
+</div>
+</div>
+<!-- 7. FOOTER SECTION -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md p-space-md rounded-xl bg-surface-container-lowest text-on-surface-variant font-body-sm text-body-sm shadow-sm">
+<div class="flex items-center gap-space-sm flex-wrap">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+<span class="">Pembaruan Terakhir: <strong class="text-on-surface">24 Maret 2024, 08:30 WIB</strong></span>
+</div>
+<span class="hidden md:inline text-outline-variant">|</span>
+<span class="">Metodologi: <strong>Box-Jenkins ARIMA</strong> &amp; <strong>GWO (Mirjalili, 2014)</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+<span class="">Divalidasi Tim Medis &amp; Ahli Gizi Puskesmas Kemenkes RI</span>
+</div>
+</div>
+</div>
+<!-- Inline Interaction Logic for Stepper & Controls -->
+<script>
+  (function() {
+    const btnRunGwo = document.getElementById('btn-run-gwo');
+    const toggleCi = document.getElementById('toggle-ci');
+    const toggleSplit = document.getElementById('toggle-split');
+    const ciPolygon = document.getElementById('ci-polygon');
+    const splitLineGroup = document.getElementById('split-line-group');
+
+    if (toggleCi && ciPolygon) {
+      toggleCi.addEventListener('change', (e) => {
+        ciPolygon.style.display = e.target.checked ? 'block' : 'none';
+      });
+    }
+
+    if (toggleSplit && splitLineGroup) {
+      toggleSplit.addEventListener('change', (e) => {
+        splitLineGroup.style.display = e.target.checked ? 'block' : 'none';
+      });
+    }
+
+    if (btnRunGwo) {
+      btnRunGwo.addEventListener('click', () => {
+        btnRunGwo.classList.add('opacity-75');
+        const originalText = btnRunGwo.innerHTML;
+        btnRunGwo.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Memproses GWO...</span>';
+        setTimeout(() => {
+          btnRunGwo.innerHTML = '<span class="material-symbols-outlined text-[18px]">done_all</span><span>Optimasi Konvergen!</span>';
+          btnRunGwo.classList.remove('opacity-75');
+          setTimeout(() => {
+            btnRunGwo.innerHTML = originalText;
+          }, 2500);
+        }, 1200);
+      });
+    }
+  })();
+</script></div></main></div>
+
+</body></html>
