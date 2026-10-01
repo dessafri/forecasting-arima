@@ -30,23 +30,21 @@
             </div>
           </div>
 
-          <!-- 3. JALUR KPI & METRIC CARDS (4 Kolom Grid) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+          <!-- 3. JALUR KPI & METRIC CARDS (1 Baris Ringkas & Rapi) -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full">
             <MetricCard 
               title="Estimasi Biaya Menu Harian"
               :value="hasData && kpi.estimasi_biaya ? 'Rp ' + Number(kpi.estimasi_biaya).toLocaleString('id-ID') : '-'"
               :badge="hasData ? 'FORMULASI GWO' : 'Belum Ada Data'"
-              :footerLeft="hasData ? 'Basis komoditas lokal' : 'Menunggu dataset'"
-              :footerRight="hasData ? (commodities.length + ' Komoditas') : ''"
+              badgeClass="text-emerald-700 bg-emerald-50 border border-emerald-200"
             />
             <MetricCard 
               title="Total Energi PMT (Balita)"
               :badge="hasData ? 'OPTIMAL' : 'N/A'"
-              :footerLeft="hasData ? '100.1% dari target 1.350 kkal' : 'Menunggu formulasi'"
-              :footerRight="hasData ? '+2 kkal/hari' : ''"
+              badgeClass="text-blue-700 bg-blue-50 border border-blue-200"
             >
               <template #value>
-                <span v-if="hasData && kpi.energi_tercapai">{{ kpi.energi_tercapai }} <span class="text-sm font-normal text-slate-500">kkal</span></span>
+                <span v-if="hasData && kpi.energi_tercapai">{{ kpi.energi_tercapai }} <span class="text-xs font-normal text-slate-500">kkal</span></span>
                 <span v-else>-</span>
               </template>
             </MetricCard>
@@ -54,19 +52,15 @@
               title="Akurasi Prediksi Rata-rata"
               :value="hasData && kpi.mape_avg ? kpi.mape_avg + '%' : '-'"
               :badge="hasData ? 'MAPE <10%' : 'N/A'"
-              :footerLeft="hasData ? 'Walk-forward validation' : 'Menunggu estimasi'"
-              :footerRight="hasData ? 'Auto-ARIMA' : ''"
-              valueClass="text-blue-500"
-              badgeClass="text-blue-500 bg-surface-container-high"
-              footerRightClass="text-blue-500"
+              valueClass="text-indigo-600"
+              badgeClass="text-indigo-700 bg-indigo-50 border border-indigo-200"
             />
             <MetricCard 
               title="Fitness Alpha Wolf (GWO)"
               :value="hasData && kpi.gwo_fitness ? kpi.gwo_fitness : '-'"
               :badge="hasData ? 'Konvergen' : 'N/A'"
-              :footerLeft="hasData ? 'Multi-objektif (Cost & Gizi)' : 'Menunggu optimasi'"
-              :footerRight="hasData ? 'Seed: 42' : ''"
-              valueClass="text-blue-600"
+              valueClass="text-amber-600"
+              badgeClass="text-amber-700 bg-amber-50 border border-amber-200"
             />
           </div>
 
