@@ -14,7 +14,7 @@
               <div class="mt-2 flex items-center">
                 <span class="text-sm font-medium text-blue-600 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[16px]">calendar_month</span>
-                  <span>{{ hasData ? 'Periode Data: ' + (dashboardData.date_range || 'Tersedia') : 'Menunggu Dataset' }}</span>
+                  <span>{{ hasData ? 'Periode Data: ' + (formatDateString(dashboardData.date_range) || 'Tersedia') : 'Menunggu Dataset' }}</span>
                 </span>
               </div>
             </div>
@@ -89,7 +89,7 @@
                     <h2 class="text-base font-semibold text-slate-900">Proyeksi Tren Harga Komoditas Pangan (ARIMA)</h2>
                   </div>
                   <span class="text-xs font-medium text-blue-500 bg-surface-container-highest px-2 py-0.5 rounded border border-secondary/20 ml-[28px]">
-                    {{ dashboardData.date_range || 'Deret Waktu Aktual' }}
+                    {{ formatDateString(dashboardData.date_range) || 'Deret Waktu Aktual' }}
                   </span>
                 </div>
                 <div class="flex items-center gap-space-sm flex-wrap">
@@ -385,6 +385,7 @@ import BaseButton from '../components/BaseButton.vue';
 import Navbar from '../components/Navbar.vue';
 import MetricCard from '../components/MetricCard.vue';
 import Sidebar from '../components/Sidebar.vue';
+import { formatDateString } from '../utils/dateFormatter';
 
 const router = useRouter();
 const hasData = ref(false);
@@ -558,7 +559,7 @@ const chartData = computed(() => {
         y,
         ciUpperY,
         ciLowerY,
-        dateStr: pt.date,
+        dateStr: formatDateString(pt.date),
         priceStr: 'Rp ' + Number(pt.price).toLocaleString('id-ID'),
         pctStr,
         diffStr,

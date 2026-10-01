@@ -197,7 +197,7 @@
 </thead>
 <tbody class="divide-y divide-surface-container font-data-mono-sm text-slate-900">
 <tr v-for="(row, idx) in previewHarga" :key="idx" class="hover:bg-slate-50 transition-colors" :class="idx === previewHarga.length - 1 ? 'bg-primary/5 font-semibold text-blue-600' : ''">
-<td class="py-2.5 px-4 text-slate-900 font-medium">{{ row.Tanggal }} {{ idx === previewHarga.length - 1 ? '(Terakhir)' : '' }}</td>
+<td class="py-2.5 px-4 text-slate-900 font-medium">{{ formatDateString(row.Tanggal) }} {{ idx === previewHarga.length - 1 ? '(Terakhir)' : '' }}</td>
 <td v-for="col in commodityColumns" :key="col" class="py-2.5 px-3 text-right">
 {{ Number(row[col] || 0).toLocaleString('id-ID') }}
 </td>
@@ -292,6 +292,7 @@ import Navbar from '../components/Navbar.vue';
 import Sidebar from '../components/Sidebar.vue';
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { formatDateString } from '../utils/dateFormatter'
 
 const router = useRouter()
 const isUploaded = ref(false)
