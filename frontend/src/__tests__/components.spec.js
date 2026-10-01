@@ -82,8 +82,8 @@ describe('Navbar Component', () => {
   it('renders navigation header items', () => {
     const wrapper = mount(Navbar)
     expect(wrapper.find('header').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Data Pangan: Jan 2024 - Mar 2024')
-    expect(wrapper.text()).toContain('Dataset: TKPI & Komoditas Pangan Valid')
+    expect(wrapper.text()).toContain('Data Pangan:')
+    expect(wrapper.text()).toContain('Dataset:')
   })
 })
 

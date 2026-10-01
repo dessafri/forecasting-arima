@@ -104,8 +104,8 @@
                     </select>
                   </div>
 
-                  <!-- Chart Scale Mode Toggle (Only when ALL is selected) -->
-                  <div v-if="selectedCommodity === 'all'" class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-medium">
+                  <!-- Chart Scale Mode Toggle (Selalu tampil agar tata letak tetap konsisten) -->
+                  <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-medium">
                     <button type="button" @click="scaleMode = 'index'" :class="scaleMode === 'index' ? 'bg-white text-blue-600 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'" class="px-2.5 py-1 rounded-md transition-all">
                       Indeks Tren (%)
                     </button>
@@ -115,12 +115,12 @@
                   </div>
 
                   <!-- Controls Toggles -->
-                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-lg select-none">
-                    <input v-model="showCI" class="accent-primary w-4 h-4 rounded" id="toggle-ci" type="checkbox">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-lg select-none hover:bg-slate-50 transition-colors">
+                    <input v-model="showCI" class="accent-primary w-4 h-4 rounded cursor-pointer" id="toggle-ci" type="checkbox">
                     <span class="text-sm font-semibold text-slate-900">CI 95%</span>
                   </label>
-                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-lg select-none">
-                    <input v-model="showSplit" class="accent-secondary w-4 h-4 rounded" id="toggle-split" type="checkbox">
+                  <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-lg select-none hover:bg-slate-50 transition-colors">
+                    <input v-model="showSplit" class="accent-secondary w-4 h-4 rounded cursor-pointer" id="toggle-split" type="checkbox">
                     <span class="text-sm font-semibold text-slate-900">Split Horizon</span>
                   </label>
                 </div>
@@ -157,10 +157,25 @@
                         <text fill="#93000a" font-family="Inter, sans-serif" font-size="9" font-weight="600" text-anchor="middle" :x="splitX" y="34">SPLIT (Hari Ini)</text>
                       </g>
 
-                      <!-- Single Commodity Shaded Area & Confidence Interval Polygon -->
+                      <!-- Confidence Interval 95% Area / Ribbon (Dinamis: Berfungsi di mode Single maupun ALL) -->
+                      <g v-if="showCI" id="ci-group">
+                        <template v-if="selectedCommodity !== 'all'">
+                          <polygon fill="url(#ciGradient)" :points="singlePolygonCI"></polygon>
+                          <polyline fill="none" :points="singleCIUpperLine" stroke="#006398" stroke-dasharray="3,3" stroke-width="1.2" stroke-opacity="0.5"></polyline>
+                          <polyline fill="none" :points="singleCILowerLine" stroke="#006398" stroke-dasharray="3,3" stroke-width="1.2" stroke-opacity="0.5"></polyline>
+                        </template>
+                        <template v-else>
+                          <polygon v-for="s in chartData.series" :key="'ci-'+s.id"
+                            :fill="s.color"
+                            fill-opacity="0.14"
+                            :points="s.ciPolygon">
+                          </polygon>
+                        </template>
+                      </g>
+
+                      <!-- Single Commodity Shaded Area -->
                       <g v-if="selectedCommodity !== 'all'">
                         <polygon fill="url(#histGradient)" :points="singlePolygonHist"></polygon>
-                        <polygon v-if="showCI" fill="url(#ciGradient)" :points="singlePolygonCI"></polygon>
                       </g>
 
                       <!-- Series Lines -->
@@ -573,6 +588,12 @@ const chartData = computed(() => {
     const forecastOnly = mapped.filter(pt => pt.type === 'forecast');
     const dashedPts = lastHist ? [lastHist, ...forecastOnly] : forecastOnly;
 
+    // CI Corridor Polygon for ALL mode & Single mode
+    const ciPts = lastHist ? [lastHist, ...forecastOnly] : forecastOnly;
+    const ciUpper = ciPts.map(pt => pt.x + ',' + pt.ciUpperY).join(' ');
+    const ciLower = ciPts.slice().reverse().map(pt => pt.x + ',' + pt.ciLowerY).join(' ');
+    const ciPolygon = (ciUpper && ciLower) ? (ciUpper + ' ' + ciLower) : '';
+
     return {
       id: s.id,
       name: s.name,
@@ -580,7 +601,8 @@ const chartData = computed(() => {
       points: s.points,
       mapped,
       solidPoints: solidPts.map(pt => pt.x + ',' + pt.y).join(' '),
-      dashedPoints: dashedPts.map(pt => pt.x + ',' + pt.y).join(' ')
+      dashedPoints: dashedPts.map(pt => pt.x + ',' + pt.y).join(' '),
+      ciPolygon
     };
   });
 
@@ -604,14 +626,35 @@ const singlePolygonHist = computed(() => {
 });
 
 const singlePolygonCI = computed(() => {
-  if (selectedCommodity.value === 'all') return '';
   const s = chartData.value.series[0];
   if (!s || !s.mapped) return '';
   const pts = s.mapped.filter(pt => pt.type === 'forecast');
   if (pts.length === 0) return '';
-  const upper = pts.map(pt => pt.x + ',' + pt.ciUpperY).join(' ');
-  const lower = pts.slice().reverse().map(pt => pt.x + ',' + pt.ciLowerY).join(' ');
+  const lastHist = s.mapped.filter(pt => pt.type === 'historic').pop();
+  const ciPts = lastHist ? [lastHist, ...pts] : pts;
+  const upper = ciPts.map(pt => pt.x + ',' + pt.ciUpperY).join(' ');
+  const lower = ciPts.slice().reverse().map(pt => pt.x + ',' + pt.ciLowerY).join(' ');
   return upper + ' ' + lower;
+});
+
+const singleCIUpperLine = computed(() => {
+  const s = chartData.value.series[0];
+  if (!s || !s.mapped) return '';
+  const pts = s.mapped.filter(pt => pt.type === 'forecast');
+  if (pts.length === 0) return '';
+  const lastHist = s.mapped.filter(pt => pt.type === 'historic').pop();
+  const ciPts = lastHist ? [lastHist, ...pts] : pts;
+  return ciPts.map(pt => pt.x + ',' + pt.ciUpperY).join(' ');
+});
+
+const singleCILowerLine = computed(() => {
+  const s = chartData.value.series[0];
+  if (!s || !s.mapped) return '';
+  const pts = s.mapped.filter(pt => pt.type === 'forecast');
+  if (pts.length === 0) return '';
+  const lastHist = s.mapped.filter(pt => pt.type === 'historic').pop();
+  const ciPts = lastHist ? [lastHist, ...pts] : pts;
+  return ciPts.map(pt => pt.x + ',' + pt.ciLowerY).join(' ');
 });
 
 const yTicks = computed(() => {
