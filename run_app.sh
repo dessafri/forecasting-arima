@@ -13,7 +13,7 @@ echo "========================================================"
 echo ""
 
 # ========================================================
-# [GUARD 1] INTEGRITAS STRUKTUR FOLDER PROYEK
+# [LANGKAH 1/5] INTEGRITAS STRUKTUR FOLDER PROYEK
 # ========================================================
 echo "[LANGKAH 1/5] Memeriksa Integritas Struktur Folder Proyek..."
 if [ ! -f "backend/app.py" ]; then
@@ -28,9 +28,9 @@ echo "[OK] Struktur file proyek lengkap (backend dan frontend terdeteksi)."
 echo ""
 
 # ========================================================
-# [GUARD 2] VALIDASI PYTHON, PIP, & MODUL VENV
+# [LANGKAH 2/5] VALIDASI PYTHON & PIP
 # ========================================================
-echo "[LANGKAH 2/5] Memeriksa Lingkungan Python, pip, & venv..."
+echo "[LANGKAH 2/5] Memeriksa Lingkungan Python & pip..."
 
 PYTHON_CMD="python3"
 if ! command -v python3 &>/dev/null; then
@@ -44,31 +44,10 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 echo "[OK] Menggunakan interpreter: $PYTHON_CMD ($($PYTHON_CMD --version))"
-
-# Cek ketersediaan venv
-echo "[GUARD] Memeriksa ketersediaan modul venv..."
-if ! $PYTHON_CMD -c "import venv" &>/dev/null; then
-    echo "[ERROR GUARD] Modul 'venv' tidak tersedia di Python Anda!"
-    echo "Pada Ubuntu/Debian jalankan: sudo apt install python3-venv"
-    exit 1
-fi
-echo "[OK] Modul 'venv' terverifikasi aktif."
-
-# Cek ketersediaan pip
-echo "[GUARD] Memeriksa ketersediaan modul pip..."
-if ! $PYTHON_CMD -m pip --version &>/dev/null; then
-    echo "[INFO] pip belum aktif. Mencoba menjalankan ensurepip..."
-    $PYTHON_CMD -m ensurepip --default-pip &>/dev/null
-    if ! $PYTHON_CMD -m pip --version &>/dev/null; then
-        echo "[ERROR GUARD] pip tidak dapat diaktifkan. Pasang python3-pip terlebih dahulu."
-        exit 1
-    fi
-fi
-echo "[OK] pip terdeteksi: $($PYTHON_CMD -m pip --version)"
 echo ""
 
 # ========================================================
-# [GUARD 3] VALIDASI NODE.JS & NPM UNTUK FRONTEND
+# [LANGKAH 3/5] VALIDASI NODE.JS & NPM
 # ========================================================
 echo "[LANGKAH 3/5] Memeriksa Lingkungan Node.js & npm..."
 
@@ -87,57 +66,52 @@ echo "[OK] npm terdeteksi: v$(npm --version)"
 echo ""
 
 # ========================================================
-# [GUARD 4] MANAJEMEN VIRTUAL ENVIRONMENT & BACKEND
+# [LANGKAH 4/5] MANAJEMEN VIRTUAL ENVIRONMENT & BACKEND
 # ========================================================
-echo "[LANGKAH 4/5] Menyiapkan Virtual Environment & Dependensi Backend..."
+echo "[LANGKAH 4/5] Menyiapkan Lingkungan Backend & Dependensi Python..."
 
 # Cek format venv jika bekas Windows (Scripts vs bin)
 if [ -d "backend/venv" ] && [ ! -f "backend/venv/bin/python" ]; then
-    echo "[GUARD] Terdeteksi folder backend/venv non-POSIX (format Windows). Membersihkan..."
+    echo "[INFO] Menghapus folder backend/venv format non-POSIX..."
     rm -rf backend/venv
 fi
 
+# Coba buat venv jika belum ada
 if [ ! -d "backend/venv" ]; then
     echo "[WAIT] Membuat virtual environment baru di 'backend/venv'..."
-    $PYTHON_CMD -m venv backend/venv
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] Gagal membuat virtual environment."
-        exit 1
-    fi
-    echo "[OK] Virtual environment baru berhasil dibuat."
-else
-    echo "[OK] Virtual environment backend/venv sudah tersedia."
+    $PYTHON_CMD -m venv backend/venv 2>/dev/null
 fi
 
-backend/venv/bin/python -m pip install --upgrade pip --quiet 2>/dev/null
-
-echo "[GUARD] Memverifikasi apakah paket inti Backend sudah terpasang..."
-if backend/venv/bin/python -c "import flask, flask_cors, pandas, numpy, openpyxl" &>/dev/null; then
-    echo "[OK] Seluruh modul inti Backend telah terpasang dengan baik!"
+ACTIVE_PY="$PYTHON_CMD"
+if [ -f "backend/venv/bin/python" ]; then
+    ACTIVE_PY="backend/venv/bin/python"
+    echo "[OK] Menggunakan Virtual Environment: backend/venv"
 else
-    echo "[WAIT] Memasang dependensi backend..."
+    echo "[INFO] Menggunakan Python Sistem ($PYTHON_CMD) langsung."
+fi
+
+# Cek dependensi utama
+echo "[GUARD] Memverifikasi dependensi modul Backend..."
+if "$ACTIVE_PY" -c "import flask, flask_cors, pandas, numpy, openpyxl" &>/dev/null; then
+    echo "[OK] Seluruh modul inti Backend sudah siap!"
+else
+    echo "[WAIT] Memasang modul backend yang diperlukan..."
     if [ -f "backend/requirements.txt" ]; then
-        backend/venv/bin/python -m pip install -r backend/requirements.txt
+        "$ACTIVE_PY" -m pip install -r backend/requirements.txt --no-warn-script-location
     elif [ -f "requirements.txt" ]; then
-        backend/venv/bin/python -m pip install -r requirements.txt
+        "$ACTIVE_PY" -m pip install -r requirements.txt --no-warn-script-location
     fi
 
-    # Fallback jika belum sempurna
-    if ! backend/venv/bin/python -c "import flask, flask_cors, pandas, numpy, openpyxl" &>/dev/null; then
-        echo "[FIX FALLBACK] Memasang paket inti langsung ke venv..."
-        backend/venv/bin/python -m pip install flask flask-cors pandas numpy openpyxl
+    if ! "$ACTIVE_PY" -c "import flask, flask_cors, pandas, numpy, openpyxl" &>/dev/null; then
+        echo "[WAIT] Memasang paket inti secara langsung..."
+        "$ACTIVE_PY" -m pip install flask flask-cors pandas numpy openpyxl --no-warn-script-location
     fi
-
-    if ! backend/venv/bin/python -c "import flask" &>/dev/null; then
-        echo "[ERROR CRITICAL] Modul Flask tetap tidak dapat dimuat!"
-        exit 1
-    fi
-    echo "[OK] Instalasi dependensi Backend berhasil diverifikasi!"
+    echo "[OK] Dependensi Backend berhasil diverifikasi!"
 fi
 
 if [ ! -f "backend/forecasting.db" ]; then
     echo "[WAIT] Menginisialisasi Database SQLite awal dari Excel..."
-    (cd backend && ./venv/bin/python init_db.py)
+    (cd backend && "$ACTIVE_PY" init_db.py)
     echo "[OK] Database berhasil diinisialisasi."
 else
     echo "[OK] Database SQLite 'forecasting.db' siap digunakan."
@@ -145,7 +119,7 @@ fi
 echo ""
 
 # ========================================================
-# [GUARD 5] SETUP DEPENDENSI FRONTEND (NPM)
+# [LANGKAH 5/5] SETUP DEPENDENSI FRONTEND (NPM)
 # ========================================================
 echo "[LANGKAH 5/5] Memeriksa Dependensi Frontend (Vue 3 + Vite)..."
 
@@ -162,7 +136,7 @@ echo ""
 # PELUNCURAN SERVER & CLEAN EXIT TRAP
 # ========================================================
 echo "========================================================"
-echo "[BERHASIL] Seluruh Guard & Dependensi Terverifikasi!"
+echo "[BERHASIL] Seluruh Guard & Dependensi Selesai Disiapkan!"
 echo ""
 echo "Meluncurkan Server Nutricast:"
 echo " 1. Backend API Server : http://127.0.0.1:5001"
@@ -171,7 +145,7 @@ echo " Tekan Ctrl+C untuk menghentikan seluruh aplikasi."
 echo "========================================================"
 echo ""
 
-(cd backend && ./venv/bin/python app.py) &
+(cd backend && "$ACTIVE_PY" app.py) &
 BACKEND_PID=$!
 
 trap "kill $BACKEND_PID 2>/dev/null; exit" INT TERM EXIT

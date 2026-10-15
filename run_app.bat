@@ -1,5 +1,5 @@
 @echo off
-TITLE Nutricast - Full Stack Runner & Dependency Guard (Windows)
+TITLE Nutricast - Full Stack Runner (Windows)
 COLOR 0A
 
 :: ========================================================
@@ -14,7 +14,7 @@ echo ========================================================
 echo.
 
 :: ========================================================
-:: [GUARD 1] INTEGRITAS STRUKTUR FOLDER PROYEK
+:: [LANGKAH 1/5] INTEGRITAS STRUKTUR FOLDER PROYEK
 :: ========================================================
 echo [LANGKAH 1/5] Memeriksa Integritas Struktur Folder Proyek...
 if not exist "backend\app.py" (
@@ -35,9 +35,9 @@ echo [OK] Struktur file proyek lengkap (backend dan frontend terdeteksi).
 echo.
 
 :: ========================================================
-:: [GUARD 2] VALIDASI PYTHON, PIP, ^& MODUL VENV
+:: [LANGKAH 2/5] VALIDASI PYTHON, PIP, ^& MODUL VENV
 :: ========================================================
-echo [LANGKAH 2/5] Memeriksa Lingkungan Python, pip, ^& venv...
+echo [LANGKAH 2/5] Memeriksa Lingkungan Python ^& pip...
 
 set PYTHON_CMD=python
 where python >nul 2>nul
@@ -59,44 +59,17 @@ if %ERRORLEVEL% NEQ 0 (
 echo [OK] Menggunakan perintah Python: %PYTHON_CMD%
 for /f "tokens=*" %%v in ('%PYTHON_CMD% --version 2^>^&1') do echo [INFO] Versi Python: %%v
 
-:: Cek versi Python minimal (>= 3.10)
-%PYTHON_CMD% -c "import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo [WARNING] Versi Python Anda terdeteksi di bawah 3.10. Disarankan Python 3.10+ untuk kestabilan dependensi.
-)
-
-:: Guard: Cek apakah modul 'venv' tersedia di Python sistem
-echo [GUARD] Memeriksa ketersediaan modul venv di Python...
-%PYTHON_CMD% -c "import venv" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR GUARD] Modul 'venv' tidak tersedia di instalasi Python Anda!
-    echo Solusi: Buka Windows Apps/Features, pilih Modify Python, lalu pastikan 'Standard Library' dan 'pip' dicentang.
-    echo.
-    pause
-    exit /b 1
-)
-echo [OK] Modul 'venv' terverifikasi aktif.
-
-:: Guard: Cek apakah modul 'pip' tersedia di Python sistem
-echo [GUARD] Memeriksa ketersediaan modul pip di Python...
+:: Cek ketersediaan pip di Python sistem
 %PYTHON_CMD% -m pip --version >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo [INFO] pip belum terkonfigurasi. Mencoba menjalankan ensurepip...
+    echo [INFO] Mengaktifkan modul pip bawaan...
     %PYTHON_CMD% -m ensurepip --default-pip >nul 2>nul
-    %PYTHON_CMD% -m pip --version >nul 2>nul
-    if %ERRORLEVEL% NEQ 0 (
-        echo [ERROR GUARD] pip tidak dapat diaktifkan di Python ini.
-        echo Harap instal ulang Python dan centang 'pip'.
-        echo.
-        pause
-        exit /b 1
-    )
 )
 for /f "tokens=*" %%p in ('%PYTHON_CMD% -m pip --version 2^>^&1') do echo [OK] pip terdeteksi: %%p
 echo.
 
 :: ========================================================
-:: [GUARD 3] VALIDASI NODE.JS ^& NPM UNTUK FRONTEND
+:: [LANGKAH 3/5] VALIDASI NODE.JS ^& NPM UNTUK FRONTEND
 :: ========================================================
 echo [LANGKAH 3/5] Memeriksa Lingkungan Node.js ^& npm...
 
@@ -105,7 +78,7 @@ if %ERRORLEVEL% NEQ 0 (
     echo [ERROR GUARD] Node.js tidak ditemukan di PATH sistem!
     echo Solusi:
     echo 1. Unduh dan pasang Node.js 18+ LTS dari: https://nodejs.org
-    echo 2. Buka ulang terminal atau jalankan kembali run_app.bat setelah instalasi.
+    echo 2. Jalankan kembali run_app.bat setelah instalasi.
     echo.
     pause
     exit /b 1
@@ -123,73 +96,73 @@ for /f "tokens=*" %%m in ('npm --version 2^>^&1') do echo [OK] npm terdeteksi: v
 echo.
 
 :: ========================================================
-:: [GUARD 4] MANAJEMEN VIRTUAL ENVIRONMENT ^& DEPENDENSI BACKEND
+:: [LANGKAH 4/5] MANAJEMEN PYTHON INTERPRETER ^& DEPENDENSI BACKEND
 :: ========================================================
-echo [LANGKAH 4/5] Menyiapkan Virtual Environment ^& Memeriksa Dependensi Backend...
+echo [LANGKAH 4/5] Menyiapkan Lingkungan Backend ^& Dependensi Python...
 
-:: Cek apakah folder venv ada tapi bukan format Windows (misal bekas copy dari macOS)
+:: Periksa apakah folder venv ada tapi bukan format Windows (misal bekas salinan macOS)
 if exist "backend\venv" (
     if not exist "backend\venv\Scripts\python.exe" (
-        echo [GUARD] Mendeteksi folder backend\venv dari format non-Windows. Membersihkan...
+        echo [INFO] Menghapus cache virtual environment non-Windows...
         rd /s /q "backend\venv" 2>nul
     )
 )
 
-:: Buat virtual environment jika belum ada
+:: Coba buat virtual environment jika belum ada
 if not exist "backend\venv\Scripts\python.exe" (
-    echo [WAIT] Membuat virtual environment baru di 'backend\venv'...
-    %PYTHON_CMD% -m venv backend\venv
-    if %ERRORLEVEL% NEQ 0 (
-        echo [ERROR] Gagal membuat virtual environment di folder backend\venv.
-        pause
-        exit /b 1
-    )
-    echo [OK] Virtual environment baru berhasil dibuat.
-) else (
-    echo [OK] Virtual environment backend\venv sudah tersedia.
+    echo [WAIT] Mencoba membuat Python Virtual Environment di 'backend\venv'...
+    %PYTHON_CMD% -m venv backend\venv 2>nul
 )
 
-:: Pastikan pip di dalam venv selalu mutakhir
-"backend\venv\Scripts\python.exe" -m pip install --upgrade pip --quiet 2>nul
-
-:: Cek apakah dependensi inti backend (flask, pandas, dll) sudah lengkap terpasang
-echo [GUARD] Memverifikasi apakah paket inti Backend sudah terpasang...
-"backend\venv\Scripts\python.exe" -c "import flask, flask_cors, pandas, numpy, openpyxl" 2>nul
-if %ERRORLEVEL% EQU 0 (
-    echo [OK] Seluruh modul inti Backend (Flask, CORS, Pandas, NumPy, OpenPyXL) telah terpasang dengan baik!
+:: Tentukan interpreter yang aktif (Gunakan venv jika ada, fallback ke sistem Python jika venv gagal)
+set "ACTIVE_PY="
+if exist "backend\venv\Scripts\python.exe" (
+    set "ACTIVE_PY=%~dp0backend\venv\Scripts\python.exe"
+    echo [OK] Menggunakan Virtual Environment: backend\venv
 ) else (
-    echo [WAIT] Modul Backend belum lengkap. Memulai proses instalasi dependensi...
-    if exist "backend\requirements.txt" (
-        echo [INFO] Memasang dari backend\requirements.txt...
-        "backend\venv\Scripts\python.exe" -m pip install -r "backend\requirements.txt"
-    ) else if exist "requirements.txt" (
-        echo [INFO] Memasang dari requirements.txt...
-        "backend\venv\Scripts\python.exe" -m pip install -r "requirements.txt"
-    )
+    set "ACTIVE_PY=%PYTHON_CMD%"
+    echo [INFO] Menggunakan Python Sistem (%PYTHON_CMD%) langsung sebagai interpreter Backend.
+)
 
-    :: Validasi ulang setelah pip install
-    "backend\venv\Scripts\python.exe" -c "import flask, flask_cors, pandas, numpy, openpyxl" 2>nul
-    if %ERRORLEVEL% NEQ 0 (
-        echo [FIX FALLBACK] Memasang paket inti secara langsung ke venv...
-        "backend\venv\Scripts\python.exe" -m pip install flask flask-cors pandas numpy openpyxl
+:: Cek apakah dependensi utama (Flask, CORS, Pandas, NumPy, OpenPyXL) sudah terpasang
+echo [GUARD] Memverifikasi dependensi modul Backend...
+"%ACTIVE_PY%" -c "import flask, flask_cors, pandas, numpy, openpyxl" 2>nul
+if %ERRORLEVEL% EQU 0 (
+    echo [OK] Seluruh modul inti Backend (Flask, CORS, Pandas, NumPy, OpenPyXL) sudah siap!
+) else (
+    echo [WAIT] Memasang modul backend yang diperlukan (Flask, Pandas, NumPy, OpenPyXL)...
+    
+    :: Coba pasang menggunakan requirements.txt
+    if exist "backend\requirements.txt" (
+        "%ACTIVE_PY%" -m pip install -r "backend\requirements.txt" --no-warn-script-location
+    ) else if exist "requirements.txt" (
+        "%ACTIVE_PY%" -m pip install -r "requirements.txt" --no-warn-script-location
     )
     
-    :: Verifikasi final
-    "backend\venv\Scripts\python.exe" -c "import flask" 2>nul
+    :: Jika masih belum lengkap, lakukan instalasi langsung (direct install)
+    "%ACTIVE_PY%" -c "import flask, flask_cors, pandas, numpy, openpyxl" 2>nul
     if %ERRORLEVEL% NEQ 0 (
-        echo [ERROR CRITICAL] Modul Flask tetap tidak dapat dimuat!
-        echo Periksa koneksi internet atau hak akses folder Anda.
-        pause
-        exit /b 1
+        echo [WAIT] Melakukan instalasi langsung paket inti...
+        "%ACTIVE_PY%" -m pip install flask flask-cors pandas numpy openpyxl --no-warn-script-location
     )
-    echo [OK] Instalasi dependensi Backend berhasil diverifikasi!
+    
+    :: Verifikasi akhir Flask
+    "%ACTIVE_PY%" -c "import flask" 2>nul
+    if %ERRORLEVEL% EQU 0 (
+        echo [OK] Dependensi Backend berhasil diverifikasi!
+    ) else (
+        echo [PERINGATAN] Flask belum terpasang sempurna pada interpreter saat ini.
+        echo Mencoba memasang ke Python global sebagai alternatif...
+        %PYTHON_CMD% -m pip install flask flask-cors pandas numpy openpyxl --no-warn-script-location 2>nul
+        set "ACTIVE_PY=%PYTHON_CMD%"
+    )
 )
 
-:: Cek status database SQLite
+:: Inisialisasi Database SQLite jika belum ada
 if not exist "backend\forecasting.db" (
-    echo [WAIT] Database 'forecasting.db' belum ditemukan. Menginisialisasi dari Excel...
+    echo [WAIT] Menginisialisasi Database SQLite awal (forecasting.db)...
     cd /d "%~dp0backend"
-    "venv\Scripts\python.exe" init_db.py
+    "%ACTIVE_PY%" init_db.py
     cd /d "%~dp0"
     echo [OK] Database berhasil diinisialisasi.
 ) else (
@@ -198,7 +171,7 @@ if not exist "backend\forecasting.db" (
 echo.
 
 :: ========================================================
-:: [GUARD 5] SETUP DEPENDENSI FRONTEND (NPM)
+:: [LANGKAH 5/5] SETUP DEPENDENSI FRONTEND (NPM)
 :: ========================================================
 echo [LANGKAH 5/5] Memeriksa Dependensi Frontend (Vue 3 + Vite)...
 
@@ -217,7 +190,7 @@ echo.
 :: PELUNCURAN SERVER & BROWSER
 :: ========================================================
 echo ========================================================
-echo [BERHASIL] Seluruh Guard ^& Dependensi Terverifikasi!
+echo [BERHASIL] Seluruh Guard ^& Dependensi Selesai Disiapkan!
 echo.
 echo Meluncurkan Server Nutricast:
 echo  1. Backend API Server : http://127.0.0.1:5001
@@ -226,7 +199,7 @@ echo ========================================================
 echo.
 
 :: Jalankan Backend API Server di CMD window terpisah
-start "Nutricast Backend Server (Port 5001)" /d "%~dp0backend" cmd /k "title Nutricast Backend API && call venv\Scripts\activate.bat && venv\Scripts\python.exe app.py"
+start "Nutricast Backend Server (Port 5001)" /d "%~dp0backend" cmd /k "title Nutricast Backend API && \"%ACTIVE_PY%\" app.py"
 
 :: Jalankan Frontend Vite Dev Server di CMD window terpisah
 start "Nutricast Frontend (Port 5173)" /d "%~dp0frontend" cmd /k "title Nutricast Frontend Web && npm run dev"

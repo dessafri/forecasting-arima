@@ -1,22 +1,14 @@
-# Nutricast Full-Stack Dependencies (Backend)
-# Kompatibel 100% dengan Windows, macOS, dan Linux (Python 3.10 - 3.13)
-# Seluruh library memiliki pre-built binary wheel resmi (tidak membutuhkan C++ compiler)
+# ========================================================
+# NUTRICAST BACKEND DEPENDENCIES
+# 100% Pre-built Wheels untuk Windows, macOS, & Linux (Python 3.10 - 3.13)
+# ========================================================
 
-# Web Server & REST API
+# Web Server & REST API Engine
 Flask>=3.0.0
 flask-cors>=4.0.0
 Werkzeug>=3.0.0
 
-# Pengolahan Data & Dataset Excel
+# Pengolahan Data & Dataset Excel (Modul 1 - 5)
 pandas>=2.0.0
 numpy>=1.24.0
 openpyxl>=3.1.0
-
-# Statistik, Metrik Evaluasi, & Peramalan
-statsmodels>=0.14.0
-scipy>=1.10.0
-scikit-learn>=1.3.0
-
-# Utilitas Tambahan
-python-dateutil>=2.8.2
-requests>=2.31.0
