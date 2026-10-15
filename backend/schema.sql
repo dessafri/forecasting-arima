@@ -26,6 +26,23 @@ INSERT INTO "evaluasi_forecast" VALUES('Ikan Kembung',355504.48485,34377.765239,
 INSERT INTO "evaluasi_forecast" VALUES('Kentang',14766.357576,14484.357272,282189628,345311562,1.89419);
 INSERT INTO "evaluasi_forecast" VALUES('Telur Ayam Ras',27373.430303,27534.412702,1497507055,1705705818,5.510095);
 INSERT INTO "evaluasi_forecast" VALUES('Wortel',12576.618182,13205.888061,1128650601,1211323929,9.077199);
+CREATE TABLE evaluasi_split (
+    komoditas TEXT,
+    split TEXT,
+    training_pct INTEGER,
+    testing_pct INTEGER,
+    jumlah_training INTEGER,
+    jumlah_testing INTEGER,
+    model_arima TEXT,
+    aic REAL,
+    bic REAL,
+    mae REAL,
+    rmse REAL,
+    mape REAL,
+    adf_stat REAL,
+    adf_p TEXT,
+    ljung_box REAL
+);
 CREATE TABLE "gwo_params" (
 "No" INTEGER,
   "Komoditas" TEXT,

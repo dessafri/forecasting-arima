@@ -211,6 +211,11 @@ python app.py
 ```
 
 > 🌐 **Backend API aktif pada**: `http://127.0.0.1:5001` (atau `http://localhost:5001`)
+> 
+> 💡 **Solusi jika muncul error `No module named 'flask'`:**
+> Error ini terjadi jika terminal mengeksekusi Python global sistem alih-alih Python di dalam Virtual Environment (`venv`).
+> - **Cara Otomatis (Direkomendasikan):** Cukup klik ganda **`run_app.bat`** (Windows) atau jalankan **`./run_app.sh`** (Mac/Linux). Skrip ini otomatis memverifikasi dan memasang Flask langsung ke venv.
+> - **Jika Manual (Windows CMD):** Pastikan venv telah aktif hingga muncul tanda `(venv)` di terminal (`venv\Scripts\activate`), lalu jalankan `pip install -r requirements.txt`. Atau langsung jalankan interpreter venv secara eksplisit: `venv\Scripts\python.exe app.py`.
 
 ---
 
