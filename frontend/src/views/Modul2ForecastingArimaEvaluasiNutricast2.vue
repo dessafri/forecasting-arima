@@ -91,9 +91,9 @@ Modul 2: Time Series Forecasting ARIMA &amp; Evaluasi Diagnostik
 <div class="flex flex-col gap-1.5">
 <label class="text-[11px] font-semibold text-slate-500 uppercase">Skenario Train:Test Split</label>
 <div class="flex items-center bg-slate-100 p-1 rounded-lg gap-1 border border-slate-200">
-<button class="split-btn flex-1 py-1.5 text-center text-xs rounded text-slate-600 hover:text-slate-900 font-mono transition-all" data-split="70-30">70:30</button>
-<button class="split-btn active flex-1 py-1.5 text-center text-xs rounded bg-white font-bold text-slate-900 shadow-xs border border-slate-200/80 font-mono transition-all" data-split="80-20">80:20</button>
-<button class="split-btn flex-1 py-1.5 text-center text-xs rounded text-slate-600 hover:text-slate-900 font-mono transition-all" data-split="90-10">90:10</button>
+<button @click="activeSplitRatio = '70:30'" :class="activeSplitRatio === '70:30' ? 'active bg-white font-bold text-slate-900 shadow-xs border border-slate-200/80' : 'text-slate-600 hover:text-slate-900'" class="split-btn flex-1 py-1.5 text-center text-xs rounded font-mono transition-all">70:30</button>
+<button @click="activeSplitRatio = '80:20'" :class="activeSplitRatio === '80:20' ? 'active bg-white font-bold text-slate-900 shadow-xs border border-slate-200/80' : 'text-slate-600 hover:text-slate-900'" class="split-btn flex-1 py-1.5 text-center text-xs rounded font-mono transition-all">80:20</button>
+<button @click="activeSplitRatio = '90:10'" :class="activeSplitRatio === '90:10' ? 'active bg-white font-bold text-slate-900 shadow-xs border border-slate-200/80' : 'text-slate-600 hover:text-slate-900'" class="split-btn flex-1 py-1.5 text-center text-xs rounded font-mono transition-all">90:10</button>
 </div>
 </div>
 <!-- Horizon Prediksi -->

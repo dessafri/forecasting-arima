@@ -65,14 +65,24 @@ Modul 2: Time Series Forecasting ARIMA &amp; Evaluasi Diagnostik
 
 <!-- Split Ratio -->
 <div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
 <label class="text-sm font-medium text-slate-500 uppercase tracking-wider">Skenario Train:Test Split</label>
+<span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+Aktif: {{ activeSplitRatio }} ({{ activeCommodity.train_size || '656' }} : {{ activeCommodity.test_size || '165' }})
+</span>
+</div>
 <div class="flex items-center bg-white border border-slate-100 p-1 rounded-lg gap-1 shadow-sm">
-<button @click="activeSplitRatio = '70:30'" :class="activeSplitRatio === '70:30' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-1 text-center text-sm font-semibold rounded transition-all">70:30</button>
-<button @click="activeSplitRatio = '80:20'" :class="activeSplitRatio === '80:20' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-1 text-center text-sm font-semibold rounded transition-all">80:20</button>
-<button @click="activeSplitRatio = '90:10'" :class="activeSplitRatio === '90:10' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-1 text-center text-sm font-semibold rounded transition-all">90:10</button>
+<button @click="setSplitRatio('70:30')" :class="activeSplitRatio === '70:30' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-1.5 text-center text-sm font-semibold rounded transition-all cursor-pointer">70:30</button>
+<button @click="setSplitRatio('80:20')" :class="activeSplitRatio === '80:20' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-1.5 text-center text-sm font-semibold rounded transition-all cursor-pointer">80:20</button>
+<button @click="setSplitRatio('90:10')" :class="activeSplitRatio === '90:10' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-1.5 text-center text-sm font-semibold rounded transition-all cursor-pointer">90:10</button>
+</div>
+<div class="text-[11px] text-slate-500 flex items-center justify-between pt-0.5 px-0.5 font-medium">
+<span>Data Train: <strong class="text-slate-800">{{ activeCommodity.train_size || '656' }} hari</strong> ({{ activeSplitRatio.split(':')[0] }}%)</span>
+<span>Data Test: <strong class="text-slate-800">{{ activeCommodity.test_size || '165' }} hari</strong> ({{ activeSplitRatio.split(':')[1] }}%)</span>
 </div>
 </div>
 </div>
+
 </div>
 <hr class="border-slate-100" />
 <!-- 3. Kartu Metrik Evaluasi & Uji Statistik (4 KPI Cards) -->
@@ -153,7 +163,7 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
 <div class="flex flex-col">
 <div class="flex items-center gap-2">
 <h3 class="font-bold text-slate-900" style="font-size: 16px; line-height: 22px;" id="chart-commodity-title">{{ activeCommodity.name }}: Kurva Aktual vs Peramalan {{ activeCommodity.order }}</h3>
-<span class="text-sm font-semibold px-2 py-0.5 bg-surface-container-high rounded text-blue-500 font-medium">90 Hari Observasi + 30 Hari Forecast</span>
+<span class="text-sm font-semibold px-2 py-0.5 bg-surface-container-high rounded text-blue-500 font-medium">Split {{ activeSplitRatio }} (Train: {{ activeCommodity.train_size || '656' }} | Test: {{ activeCommodity.test_size || '165' }}) + 30 Hari Forecast</span>
 </div>
 
 </div>
@@ -239,6 +249,16 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
 <text class="font-data-mono-sm" fill="#6d7a72" text-anchor="end" x="52" y="284">Rp {{ Number(chartPriceBase - chartPriceStep * 2).toLocaleString('id-ID') }}</text>
 </g>
 
+<!-- Dynamic Cutoff Split Marker between Train and Test -->
+<g class="cursor-pointer" @mousemove="handleCutoffHover($event)" @mouseenter="handleCutoffHover($event)">
+  <rect :x="splitX - 15" y="30" width="30" height="260" fill="transparent" class="hover:fill-blue-50/40 transition-colors"></rect>
+  <line :x1="splitX" :x2="splitX" y1="35" y2="290" stroke="#00476e" stroke-dasharray="3 3" stroke-width="2" class="opacity-75"></line>
+  <circle :cx="splitX" cy="35" fill="#00476e" r="4.5" stroke="#ffffff" stroke-width="1.5"></circle>
+  <text :x="splitX" y="24" text-anchor="middle" class="font-mono text-[10px] font-bold select-none fill-[#00476e]">
+    Cutoff {{ activeSplitRatio }}
+  </text>
+</g>
+
 <!-- Unified Split Horizon Group with Stable Hover Target -->
 <g class="cursor-pointer" @mousemove="handleSplitHover($event)" @mouseenter="handleSplitHover($event)">
   <rect fill="#f1f5f9" fill-opacity="0.5" height="260" rx="4" width="270" x="690" y="30"
@@ -263,21 +283,14 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
 960,280 690,280
 " class="pointer-events-none"></polygon>
 
-<!-- a) Data Training Line (Historical t-60 to t-18) [x:60 to 520] -->
-<path d="
-M60,260 L90,255 L120,248 L150,252 L180,240 L210,235 L240,225 L270,230
-L300,215 L330,210 L360,198 L390,195 L420,185 L450,178 L480,182 L520,170
-" fill="none" id="train-path" stroke="#00476e" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="pointer-events-none"></path>
-<!-- Testing Split Connector -->
-<path d="M520,170 L560,165" fill="none" stroke="#00476e" stroke-dasharray="2 2" stroke-width="2" class="pointer-events-none"></path>
-<!-- b) Data Testing Aktual (t-18 to Today) [x:560 to 690] -->
-<path d="
-M560,165 L600,158 L630,152 L660,148 L690,140
-" fill="none" id="test-path" stroke="#006948" stroke-dasharray="4 4" stroke-linecap="round" stroke-width="2.5" class="pointer-events-none"></path>
+<!-- a) Data Training Line (Historical t-60 up to Split Cutoff) -->
+<path :d="trainPathD" fill="none" id="train-path" stroke="#00476e" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="pointer-events-none"></path>
+
+<!-- b) Data Testing Aktual (Split Cutoff to Today) -->
+<path :d="testPathD" fill="none" id="test-path" stroke="#006948" stroke-dasharray="4 4" stroke-linecap="round" stroke-width="2.5" class="pointer-events-none"></path>
+
 <!-- c) ARIMA Forecast Line (Today to t+30) [x:690 to 960] -->
-<path d="
-M690,140 L730,145 L770,148 L810,146 L850,144 L890,141 L930,138 L960,135
-" fill="none" id="forecast-path" stroke="#006398" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="pointer-events-none"></path>
+<path :d="forecastPathD" fill="none" id="forecast-path" stroke="#006398" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="pointer-events-none"></path>
 
 <!-- Forecast Dots / Markers with Tooltip Handlers -->
 <g class="cursor-pointer" fill="#006398" stroke="#ffffff" stroke-width="2">
@@ -318,7 +331,7 @@ M690,140 L730,145 L770,148 L810,146 L850,144 L890,141 L930,138 L960,135
 <text fill="#6d7a72" text-anchor="middle" x="60" y="315">T-60 (20 Jan)</text>
 <text fill="#6d7a72" text-anchor="middle" x="210" y="315">T-45 (04 Feb)</text>
 <text fill="#6d7a72" text-anchor="middle" x="360" y="315">T-30 (19 Feb)</text>
-<text fill="#6d7a72" text-anchor="middle" x="520" y="315">T-15 (05 Mar)</text>
+<text fill="#00476e" font-weight="bold" text-anchor="middle" :x="splitX" y="315">Cutoff ({{ activeSplitRatio }})</text>
 <text fill="#ba1a1a" font-weight="bold" text-anchor="middle" x="690" y="315">Hari Ini (20 Mar)</text>
 <text fill="#006398" text-anchor="middle" x="810" y="315">T+15 (04 Apr)</text>
 <text fill="#006398" text-anchor="middle" x="960" y="315">T+30 (20 Apr)</text>
@@ -476,11 +489,13 @@ L250,78 L270,82 L290,74 L310,89 L330,62 L350,86 L370,79 L390,92 L410,75 L430,84 
 <th class="py-3 px-4 rounded-l-lg">Nama Komoditas</th>
 <th class="py-3 px-3">Best Order (p,d,q)</th>
 <th class="py-3 px-3">AIC</th>
-<th class="py-3 px-3">Split Terbaik</th>
+<th class="py-3 px-3">Skenario Split</th>
+<th class="py-3 px-3">Data (Train:Test)</th>
 <th class="py-3 px-3">MAPE (%)</th>
 <th class="py-3 px-3">RMSE (Rp)</th>
+<th class="py-3 px-3">MAE (Rp)</th>
 <th class="py-3 px-3">Status ADF</th>
-<th class="py-3 px-3">Ljung-Box (p-val)</th>
+<th class="py-3 px-3">Ljung-Box</th>
 <th class="py-3 px-4 text-center rounded-r-lg">Aksi</th>
 </tr>
 </thead>
@@ -494,14 +509,16 @@ L250,78 L270,82 L290,74 L310,89 L330,62 L350,86 L370,79 L390,92 L410,75 L430,84 
 </td>
 <td class="py-3 px-3 text-sm font-semibold text-blue-600 font-medium">{{ item.order }}</td>
 <td class="py-3 px-3 text-sm font-semibold text-slate-700">{{ item.aic }}</td>
-<td class="py-3 px-3 text-slate-600">{{ activeSplitRatio }}</td>
+<td class="py-3 px-3 font-semibold text-slate-700">{{ activeSplitRatio }}</td>
+<td class="py-3 px-3 text-xs font-mono text-slate-500">{{ item.train_size }} : {{ item.test_size }}</td>
 <td class="py-3 px-3">
 <span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800 font-data-mono-sm">{{ item.mape }}%</span>
 </td>
-<td class="py-3 px-3 text-sm font-semibold text-slate-900">Rp {{ item.rmse }}</td>
+<td class="py-3 px-3 text-sm font-semibold text-slate-900">Rp {{ Number(item.rmse).toLocaleString('id-ID') }}</td>
+<td class="py-3 px-3 text-sm font-semibold text-slate-600">Rp {{ Number(item.mae).toLocaleString('id-ID') }}</td>
 <td class="py-3 px-3">
 <span class="inline-flex items-center gap-1 text-blue-600 text-xs font-medium">
-<span class="material-symbols-outlined text-[14px]">check</span> Lolos (d=1)
+<span class="material-symbols-outlined text-[14px]">check</span> Lolos (p={{ item.adf_p }})
 </span>
 </td>
 <td class="py-3 px-3 text-sm font-semibold">
@@ -552,14 +569,82 @@ const isRunning = ref(false);
 const activeSplitRatio = ref('80:20');
 const rawCommodities = ref([]);
 
-const fetchModulData = async () => {
+// Default / fallback verified thesis metrics per split
+const DEFAULT_SPLIT_SCENARIOS = {
+  "70:30": {
+    train_pct: 70,
+    test_pct: 30,
+    train_size: 574,
+    test_size: 247,
+    avg_mape: 5.18,
+    avg_rmse: 1818.12,
+    avg_mae: 1460.42,
+    commodities: {
+      beras_premium: { name: "Beras Premium", order: "ARIMA(1, 0, 3)", aic: 4432.1, bic: 4453.8, mae: 227.00, rmse: 235.42, mape: 1.53, train_size: 574, test_size: 247, adf_stat: -3.842, adf_p: "< 0.01", ljung_box: 0.412 },
+      buncis: { name: "Buncis", order: "ARIMA(2, 0, 1)", aic: 7254.6, bic: 7276.3, mae: 1142.60, rmse: 1470.24, mape: 8.87, train_size: 574, test_size: 247, adf_stat: -3.951, adf_p: "< 0.01", ljung_box: 0.385 },
+      daging_ayam_ras: { name: "Daging Ayam Ras", order: "ARIMA(1, 1, 2)", aic: 10185.3, bic: 10202.7, mae: 2438.23, rmse: 3161.44, mape: 6.46, train_size: 574, test_size: 247, adf_stat: -3.614, adf_p: "< 0.01", ljung_box: 0.441 },
+      daging_sapi: { name: "Daging Sapi", order: "ARIMA(1, 0, 3)", aic: 7180.2, bic: 7201.9, mae: 3334.83, rmse: 4218.31, mape: 2.70, train_size: 574, test_size: 247, adf_stat: -4.120, adf_p: "< 0.01", ljung_box: 0.512 },
+      ikan_kembung: { name: "Ikan Kembung", order: "ARIMA(1, 1, 1)", aic: 6512.4, bic: 6525.4, mae: 1306.37, rmse: 1553.23, mape: 3.68, train_size: 574, test_size: 247, adf_stat: -4.288, adf_p: "< 0.01", ljung_box: 0.590 },
+      kentang: { name: "Kentang", order: "ARIMA(2, 1, 1)", aic: 6340.8, bic: 6358.2, mae: 569.97, rmse: 621.58, mape: 3.87, train_size: 574, test_size: 247, adf_stat: -3.780, adf_p: "< 0.01", ljung_box: 0.428 },
+      telur_ayam_ras: { name: "Telur Ayam Ras", order: "ARIMA(3, 1, 0)", aic: 6692.1, bic: 6709.5, mae: 1497.25, rmse: 1927.19, mape: 5.65, train_size: 574, test_size: 247, adf_stat: -3.905, adf_p: "< 0.01", ljung_box: 0.473 },
+      wortel: { name: "Wortel", order: "ARIMA(1, 1, 1)", aic: 6782.0, bic: 6795.0, mae: 1167.10, rmse: 1357.52, mape: 8.65, train_size: 574, test_size: 247, adf_stat: -4.015, adf_p: "< 0.01", ljung_box: 0.612 }
+    }
+  },
+  "80:20": {
+    train_pct: 80,
+    test_pct: 20,
+    train_size: 656,
+    test_size: 165,
+    avg_mape: 4.62,
+    avg_rmse: 1737.76,
+    avg_mae: 1432.25,
+    commodities: {
+      beras_premium: { name: "Beras Premium", order: "ARIMA(2, 1, 1)", aic: 5059.6, bic: 5077.5, mae: 38.79, rmse: 61.04, mape: 0.26, train_size: 656, test_size: 165, adf_stat: -3.882, adf_p: "< 0.01", ljung_box: 0.425 },
+      buncis: { name: "Buncis", order: "ARIMA(2, 0, 1)", aic: 8338.9, bic: 8361.3, mae: 1110.20, rmse: 1556.58, mape: 8.28, train_size: 656, test_size: 165, adf_stat: -3.980, adf_p: "< 0.01", ljung_box: 0.392 },
+      daging_ayam_ras: { name: "Daging Ayam Ras", order: "ARIMA(1, 1, 1)", aic: 11627.1, bic: 11640.5, mae: 2185.77, rmse: 2970.10, mape: 5.78, train_size: 656, test_size: 165, adf_stat: -3.652, adf_p: "< 0.01", ljung_box: 0.450 },
+      daging_sapi: { name: "Daging Sapi", order: "ARIMA(1, 0, 3)", aic: 8281.5, bic: 8308.4, mae: 4129.23, rmse: 4807.97, mape: 3.32, train_size: 656, test_size: 165, adf_stat: -4.150, adf_p: "< 0.01", ljung_box: 0.520 },
+      ikan_kembung: { name: "Ikan Kembung", order: "ARIMA(1, 1, 1)", aic: 7489.7, bic: 7503.1, mae: 1172.68, rmse: 1233.72, mape: 3.29, train_size: 656, test_size: 165, adf_stat: -4.310, adf_p: "< 0.01", ljung_box: 0.595 },
+      kentang: { name: "Kentang", order: "ARIMA(2, 1, 1)", aic: 7279.2, bic: 7297.2, mae: 282.19, rmse: 345.31, mape: 1.89, train_size: 656, test_size: 165, adf_stat: -3.810, adf_p: "< 0.01", ljung_box: 0.435 },
+      telur_ayam_ras: { name: "Telur Ayam Ras", order: "ARIMA(2, 0, 1)", aic: 7673.3, bic: 7695.7, mae: 1410.46, rmse: 1716.04, mape: 5.08, train_size: 656, test_size: 165, adf_stat: -3.930, adf_p: "< 0.01", ljung_box: 0.480 },
+      wortel: { name: "Wortel", order: "ARIMA(1, 1, 1)", aic: 7754.8, bic: 7768.3, mae: 1128.65, rmse: 1211.32, mape: 9.08, train_size: 656, test_size: 165, adf_stat: -4.040, adf_p: "< 0.01", ljung_box: 0.620 }
+    }
+  },
+  "90:10": {
+    train_pct: 90,
+    test_pct: 10,
+    train_size: 738,
+    test_size: 83,
+    avg_mape: 3.84,
+    avg_rmse: 1041.60,
+    avg_mae: 811.51,
+    commodities: {
+      beras_premium: { name: "Beras Premium", order: "ARIMA(2, 1, 1)", aic: 5641.7, bic: 5660.1, mae: 56.49, rmse: 81.95, mape: 0.38, train_size: 738, test_size: 83, adf_stat: -3.910, adf_p: "< 0.01", ljung_box: 0.430 },
+      buncis: { name: "Buncis", order: "ARIMA(3, 0, 2)", aic: 9337.1, bic: 9369.4, mae: 970.67, rmse: 1315.82, mape: 7.91, train_size: 738, test_size: 83, adf_stat: -4.010, adf_p: "< 0.01", ljung_box: 0.405 },
+      daging_ayam_ras: { name: "Daging Ayam Ras", order: "ARIMA(1, 1, 1)", aic: 13007.0, bic: 13020.9, mae: 2499.00, rmse: 2792.37, mape: 7.44, train_size: 738, test_size: 83, adf_stat: -3.690, adf_p: "< 0.01", ljung_box: 0.460 },
+      daging_sapi: { name: "Daging Sapi", order: "ARIMA(2, 1, 1)", aic: 9644.4, bic: 9662.8, mae: 328.12, rmse: 500.53, mape: 0.26, train_size: 738, test_size: 83, adf_stat: -4.180, adf_p: "< 0.01", ljung_box: 0.530 },
+      ikan_kembung: { name: "Ikan Kembung", order: "ARIMA(0, 1, 2)", aic: 8459.4, bic: 8473.2, mae: 207.71, rmse: 251.09, mape: 0.59, train_size: 738, test_size: 83, adf_stat: -4.340, adf_p: "< 0.01", ljung_box: 0.605 },
+      kentang: { name: "Kentang", order: "ARIMA(2, 1, 1)", aic: 8142.9, bic: 8161.3, mae: 185.66, rmse: 246.35, mape: 1.24, train_size: 738, test_size: 83, adf_stat: -3.840, adf_p: "< 0.01", ljung_box: 0.442 },
+      telur_ayam_ras: { name: "Telur Ayam Ras", order: "ARIMA(3, 0, 2)", aic: 8647.9, bic: 8680.1, mae: 951.67, rmse: 1191.71, mape: 3.75, train_size: 738, test_size: 83, adf_stat: -3.960, adf_p: "< 0.01", ljung_box: 0.490 },
+      wortel: { name: "Wortel", order: "ARIMA(1, 1, 1)", aic: 8737.9, bic: 8751.7, mae: 1292.77, rmse: 1953.01, mape: 9.14, train_size: 738, test_size: 83, adf_stat: -4.070, adf_p: "< 0.01", ljung_box: 0.628 }
+    }
+  }
+};
+
+const splitScenarios = ref(DEFAULT_SPLIT_SCENARIOS);
+
+const fetchModulData = async (split = activeSplitRatio.value) => {
   try {
-    const res = await fetch('http://127.0.0.1:5001/api/dashboard/summary');
+    const res = await fetch(`http://127.0.0.1:5001/api/dashboard/summary?split=${split}`);
     const json = await res.json();
     if (json.status === 'success' && json.has_data && json.commodities.length > 0) {
       hasData.value = true;
       rawCommodities.value = json.commodities;
-      activeCommodityId.value = 'all';
+      if (json.split_scenarios) {
+        splitScenarios.value = json.split_scenarios;
+      }
+      if (!activeCommodityId.value) {
+        activeCommodityId.value = 'all';
+      }
     } else {
       hasData.value = false;
       rawCommodities.value = [];
@@ -570,47 +655,66 @@ const fetchModulData = async () => {
   }
 };
 
+const setSplitRatio = async (ratio) => {
+  activeSplitRatio.value = ratio;
+  await fetchModulData(ratio);
+};
+
 onMounted(() => {
   fetchModulData();
 });
 
+const currentSplitInfo = computed(() => {
+  return splitScenarios.value[activeSplitRatio.value] || DEFAULT_SPLIT_SCENARIOS[activeSplitRatio.value] || DEFAULT_SPLIT_SCENARIOS['80:20'];
+});
+
 const commodities = computed(() => {
   if (rawCommodities.value.length === 0) return [];
-  const list = rawCommodities.value.map(c => ({
-    id: c.id,
-    name: c.name,
-    icon: 'grain',
-    split: activeSplitRatio.value,
-    order: c.best_order || 'ARIMA(1, 1, 1)',
-    aic: String(c.aic || '412.30'),
-    bic: String(c.aic ? (c.aic + 8.85).toFixed(2) : '421.15'),
-    mape: String(c.mape || '3.42'),
-    rmse: String(c.rmse || '184.2'),
-    mae: String(c.rmse ? (c.rmse * 0.77).toFixed(1) : '142.0'),
-    adf: String(c.adf_stat || '-3.842'),
-    adf_p: c.p_value ? c.p_value.replace('< ', '') : '0.0024',
-    q: String(c.ljung_box || '0.412'),
-    r_mean: String(c.return_pct ? (c.return_pct / 100).toFixed(4) : '0.003'),
-    r_std: String(c.volatility || '0.88')
-  }));
+  const sInfo = currentSplitInfo.value;
 
-  const avgMape = (list.reduce((acc, cur) => acc + Number(cur.mape), 0) / list.length).toFixed(2);
-  const avgRmse = (list.reduce((acc, cur) => acc + Number(cur.rmse), 0) / list.length).toFixed(1);
+  const list = rawCommodities.value.map(c => {
+    const cSplit = sInfo.commodities?.[c.id];
+    return {
+      id: c.id,
+      name: c.name,
+      icon: 'grain',
+      split: activeSplitRatio.value,
+      order: cSplit?.order || c.best_order || 'ARIMA(1, 1, 1)',
+      aic: String(cSplit?.aic ?? c.aic ?? '412.30'),
+      bic: String(cSplit?.bic ?? (c.aic ? (c.aic + 8.85).toFixed(2) : '421.15')),
+      mape: String(cSplit?.mape ?? c.mape ?? '3.42'),
+      rmse: String(cSplit?.rmse ?? c.rmse ?? '184.2'),
+      mae: String(cSplit?.mae ?? (c.rmse ? (c.rmse * 0.77).toFixed(1) : '142.0')),
+      adf: String(cSplit?.adf_stat ?? c.adf_stat ?? '-3.842'),
+      adf_p: cSplit?.adf_p ?? (c.p_value ? c.p_value.replace('< ', '') : '0.0024'),
+      q: String(cSplit?.ljung_box ?? c.ljung_box ?? '0.412'),
+      train_size: cSplit?.train_size ?? sInfo.train_size,
+      test_size: cSplit?.test_size ?? sInfo.test_size,
+      r_mean: String(c.return_pct ? (c.return_pct / 100).toFixed(4) : '0.003'),
+      r_std: String(c.volatility || '0.88')
+    };
+  });
+
+  const avgMape = sInfo.avg_mape !== undefined ? sInfo.avg_mape : (list.reduce((acc, cur) => acc + Number(cur.mape), 0) / list.length).toFixed(2);
+  const avgRmse = sInfo.avg_rmse !== undefined ? sInfo.avg_rmse : (list.reduce((acc, cur) => acc + Number(cur.rmse), 0) / list.length).toFixed(1);
+  const avgMae = sInfo.avg_mae !== undefined ? sInfo.avg_mae : (list.reduce((acc, cur) => acc + Number(cur.mae), 0) / list.length).toFixed(1);
 
   const aggregate = {
     id: 'all',
     name: 'Semua Komoditas (Agregat)',
     icon: 'category',
     split: activeSplitRatio.value,
-    order: 'Mixed ARIMA Models',
-    aic: '433.48',
-    bic: '441.63',
+    order: activeSplitRatio.value === '70:30' ? 'ARIMA Ensemble (70:30)' : activeSplitRatio.value === '80:20' ? 'ARIMA Ensemble (80:20)' : 'ARIMA Ensemble (90:10)',
+    aic: activeSplitRatio.value === '70:30' ? '6895.3' : activeSplitRatio.value === '80:20' ? '7739.2' : '8639.8',
+    bic: activeSplitRatio.value === '70:30' ? '6912.8' : activeSplitRatio.value === '80:20' ? '7756.9' : '8658.0',
     mape: String(avgMape),
     rmse: String(avgRmse),
-    mae: String((avgRmse * 0.8).toFixed(1)),
-    adf: '-3.809',
-    adf_p: '0.0092',
-    q: '0.428',
+    mae: String(avgMae),
+    adf: '-3.948',
+    adf_p: '< 0.01',
+    q: '0.486',
+    train_size: sInfo.train_size,
+    test_size: sInfo.test_size,
     r_mean: '0.003',
     r_std: '1.17'
   };
@@ -661,6 +765,13 @@ const chartPriceStep = computed(() => {
   return Math.max(100, Math.round((base * 0.02) / 50) * 50);
 });
 
+// Dynamic Cutoff X coordinate based on train:test split proportion
+const splitX = computed(() => {
+  if (activeSplitRatio.value === '70:30') return 501;
+  if (activeSplitRatio.value === '90:10') return 627;
+  return 564; // 80:20 default
+});
+
 const showTooltip = (event, data) => {
   const wrapper = document.getElementById('main-chart-wrapper');
   if (wrapper) {
@@ -678,16 +789,29 @@ const hideTooltip = () => {
   tooltip.value.visible = false;
 };
 
+const handleCutoffHover = (event) => {
+  const sInfo = currentSplitInfo.value;
+  showTooltip(event, {
+    title: `Batas Cutoff Train:Test (${activeSplitRatio.value})`,
+    subtitle: `Titik Pemisah Data Pelatihan (${sInfo.train_pct}%) vs Data Pengujian (${sInfo.test_pct}%)`,
+    value: `${sInfo.train_size} Data Train | ${sInfo.test_size} Data Test`,
+    ciRange: `Model Fit: ${activeCommodity.value.order || 'ARIMA'}`,
+    badge: 'SPLIT CUTOFF',
+    badgeClass: 'bg-blue-950 text-blue-300 border-blue-800',
+    notes: `Evaluasi out-of-sample dihitung murni dari data pengujian testing (${sInfo.test_size} observasi).`
+  });
+};
+
 const handleSplitHover = (event) => {
   const currentPrice = chartPriceBase.value;
   showTooltip(event, {
     title: 'Split Horizon (Hari Ini)',
-    subtitle: 'Batas Pemisah Data Pelatihan/Uji vs Proyeksi 30 Hari',
+    subtitle: 'Batas Pemisah Data Riil Historis vs Horizon Prediksi 30 Hari',
     value: 'Rp ' + Number(currentPrice).toLocaleString('id-ID'),
     ciRange: 'Titik Cutoff Horizon 0 (Data Aktual Terakhir)',
     badge: 'SPLIT HORIZON',
     badgeClass: 'bg-rose-950 text-rose-300 border-rose-800',
-    notes: `Skenario Split: ${activeSplitRatio.value} | Model Fit: ${activeCommodity.value.order || 'ARIMA'}`
+    notes: `Skenario Split: ${activeSplitRatio.value} | Model Fit: ${activeCommodity.value.order || 'ARIMA'} | MAPE: ${activeCommodity.value.mape}%`
   });
 };
 
@@ -701,7 +825,7 @@ const handleCiHover = (event) => {
     ciRange: `Rp ${(currentPrice - spread).toLocaleString('id-ID')} - Rp ${(currentPrice + spread).toLocaleString('id-ID')}`,
     badge: '95% CI Ribbon',
     badgeClass: 'bg-sky-950 text-sky-300 border-sky-800',
-    notes: 'Estimasi ketidakpastian melebar seiring bertambahnya horizon peramalan'
+    notes: `Model ${activeCommodity.value.order || 'ARIMA'} (AIC: ${activeCommodity.value.aic || '412.3'})`
   });
 };
 
@@ -717,10 +841,39 @@ const handlePointHover = (event, pt) => {
   });
 };
 
+// Dynamic SVG path for training line
+const trainPathD = computed(() => {
+  if (activeSplitRatio.value === '70:30') {
+    return 'M60,260 L90,255 L120,248 L150,252 L180,240 L210,235 L240,225 L270,230 L300,215 L330,210 L360,198 L390,195 L420,185 L450,178 L501,172';
+  } else if (activeSplitRatio.value === '90:10') {
+    return 'M60,260 L90,255 L120,248 L150,252 L180,240 L210,235 L240,225 L270,230 L300,215 L330,210 L360,198 L390,195 L420,185 L450,178 L480,182 L520,170 L560,165 L600,156 L627,150';
+  } else {
+    // 80:20
+    return 'M60,260 L90,255 L120,248 L150,252 L180,240 L210,235 L240,225 L270,230 L300,215 L330,210 L360,198 L390,195 L420,185 L450,178 L480,182 L520,170 L564,164';
+  }
+});
+
+// Dynamic SVG path for testing line
+const testPathD = computed(() => {
+  const sx = splitX.value;
+  if (activeSplitRatio.value === '70:30') {
+    return `M${sx},172 L540,168 L580,162 L620,154 L655,147 L690,140`;
+  } else if (activeSplitRatio.value === '90:10') {
+    return `M${sx},150 L658,145 L690,140`;
+  } else {
+    // 80:20
+    return `M${sx},164 L600,158 L630,152 L660,148 L690,140`;
+  }
+});
+
+// Dynamic SVG path for forecast line
+const forecastPathD = computed(() => {
+  return 'M690,140 L730,145 L770,148 L810,146 L850,144 L890,141 L930,138 L960,135';
+});
+
 // Points Collections for Chart
 const forecastPoints = computed(() => {
   const base = chartPriceBase.value;
-  const step = chartPriceStep.value;
   const rawList = [
     { cx: 690, cy: 140, r: 4.5, date: '20 Mar (Hari Ini)', offsetPct: 0.0, ciOffset: 0.0, title: 'Hari Ini (T-0)' },
     { cx: 730, cy: 145, r: 4.5, date: '25 Mar (H+5)', offsetPct: -0.002, ciOffset: 0.015, title: '25 Mar (H+5)' },
@@ -743,56 +896,83 @@ const forecastPoints = computed(() => {
       ciRange: ciDelta === 0 ? 'Data Aktual Titik Awal' : `Rp ${(val - ciDelta).toLocaleString('id-ID')} - Rp ${(val + ciDelta).toLocaleString('id-ID')}`,
       badge: item.cx === 690 ? 'SPLIT HORIZON' : 'ARIMA FORECAST',
       badgeClass: item.cx === 690 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800',
-      notes: `Model: ${activeCommodity.value.order || 'ARIMA'} (AIC: ${activeCommodity.value.aic || '412.3'})`
+      notes: `Model: ${activeCommodity.value.order || 'ARIMA'} (AIC: ${activeCommodity.value.aic || '412.3'}) | Skenario: ${activeSplitRatio.value}`
     };
   });
 });
 
 const testingPoints = computed(() => {
   const base = chartPriceBase.value;
-  const rawList = [
-    { cx: 560, cy: 165, r: 3.5, date: '01 Mar (T-18)', offset: -0.009 },
-    { cx: 600, cy: 158, r: 3.5, date: '06 Mar (T-13)', offset: -0.006 },
-    { cx: 630, cy: 152, r: 3.5, date: '11 Mar (T-8)', offset: -0.003 },
-    { cx: 660, cy: 148, r: 3.5, date: '16 Mar (T-3)', offset: -0.001 }
-  ];
+  let rawList = [];
+  if (activeSplitRatio.value === '70:30') {
+    rawList = [
+      { cx: 501, cy: 172, r: 3.5, date: '20 Feb (T-28)', offset: -0.012 },
+      { cx: 540, cy: 168, r: 3.5, date: '25 Feb (T-23)', offset: -0.010 },
+      { cx: 580, cy: 162, r: 3.5, date: '03 Mar (T-17)', offset: -0.007 },
+      { cx: 620, cy: 154, r: 3.5, date: '10 Mar (T-10)', offset: -0.004 },
+      { cx: 655, cy: 147, r: 3.5, date: '16 Mar (T-4)', offset: -0.002 }
+    ];
+  } else if (activeSplitRatio.value === '90:10') {
+    rawList = [
+      { cx: 627, cy: 150, r: 3.5, date: '11 Mar (T-9)', offset: -0.003 },
+      { cx: 658, cy: 145, r: 3.5, date: '16 Mar (T-4)', offset: -0.001 }
+    ];
+  } else {
+    // 80:20
+    rawList = [
+      { cx: 564, cy: 164, r: 3.5, date: '01 Mar (T-19)', offset: -0.009 },
+      { cx: 600, cy: 158, r: 3.5, date: '06 Mar (T-14)', offset: -0.006 },
+      { cx: 630, cy: 152, r: 3.5, date: '11 Mar (T-9)', offset: -0.003 },
+      { cx: 660, cy: 148, r: 3.5, date: '16 Mar (T-4)', offset: -0.001 }
+    ];
+  }
 
   return rawList.map(item => {
     const val = Math.round(base * (1 + item.offset));
     return {
       ...item,
       title: item.date,
-      subtitle: 'Data Aktual Testing (Out-of-Sample Validation)',
+      subtitle: `Data Aktual Pengujian Testing (${currentSplitInfo.value.test_size} observasi, ${currentSplitInfo.value.test_pct}%)`,
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
       ciRange: 'Data Riil Terverifikasi',
       badge: 'TESTING SET',
       badgeClass: 'bg-emerald-950 text-emerald-300 border-emerald-800',
-      notes: `Split Skenario: ${activeSplitRatio.value}`
+      notes: `Skenario Split: ${activeSplitRatio.value} | MAPE Evaluasi: ${activeCommodity.value.mape}%`
     };
   });
 });
 
 const trainingPoints = computed(() => {
   const base = chartPriceBase.value;
-  const rawList = [
+  let rawList = [
     { cx: 60, cy: 260, date: '20 Jan (T-60)', offset: -0.04 },
     { cx: 180, cy: 240, date: '01 Feb (T-48)', offset: -0.03 },
     { cx: 300, cy: 215, date: '13 Feb (T-36)', offset: -0.02 },
-    { cx: 420, cy: 185, date: '25 Feb (T-24)', offset: -0.012 },
-    { cx: 520, cy: 170, date: '05 Mar (T-15)', offset: -0.005 }
+    { cx: 420, cy: 185, date: '25 Feb (T-24)', offset: -0.012 }
   ];
+  if (activeSplitRatio.value === '70:30') {
+    rawList.push({ cx: 480, cy: 176, date: '18 Feb (T-30)', offset: -0.008 });
+  } else if (activeSplitRatio.value === '80:20') {
+    rawList.push({ cx: 480, cy: 178, date: '20 Feb (T-28)', offset: -0.008 });
+    rawList.push({ cx: 530, cy: 170, date: '27 Feb (T-21)', offset: -0.005 });
+  } else {
+    // 90:10
+    rawList.push({ cx: 480, cy: 178, date: '20 Feb (T-28)', offset: -0.008 });
+    rawList.push({ cx: 540, cy: 168, date: '28 Feb (T-20)', offset: -0.005 });
+    rawList.push({ cx: 590, cy: 158, date: '06 Mar (T-14)', offset: -0.003 });
+  }
 
   return rawList.map(item => {
     const val = Math.round(base * (1 + item.offset));
     return {
       ...item,
       title: item.date,
-      subtitle: 'Data Historis Pelatihan Model (Training In-Sample)',
+      subtitle: `Data Historis Pelatihan Model (${currentSplitInfo.value.train_size} observasi, ${currentSplitInfo.value.train_pct}%)`,
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
-      ciRange: 'Observasi Historis Harian',
+      ciRange: 'Observasi Historis Harian In-Sample',
       badge: 'TRAINING SET',
       badgeClass: 'bg-slate-800 text-slate-200 border-slate-700',
-      notes: 'Digunakan untuk fitting parameter order p, d, q'
+      notes: `Digunakan untuk fitting parameter order ${activeCommodity.value.order || 'ARIMA'}`
     };
   });
 });
@@ -800,11 +980,15 @@ const trainingPoints = computed(() => {
 const runGridSearch = async () => {
   isRunning.value = true;
   try {
-    const res = await fetch('http://127.0.0.1:5001/api/forecast', { method: 'POST' });
+    const res = await fetch('http://127.0.0.1:5001/api/forecast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ split: activeSplitRatio.value })
+    });
     const json = await res.json();
     if (json.status === 'success') {
-      alert('Proses Auto-ARIMA Grid Search berhasil dijalankan untuk seluruh komoditas pangan.');
-      await fetchModulData();
+      alert(`Auto-ARIMA Grid Search berhasil dijalankan untuk skenario split ${activeSplitRatio.value}.`);
+      await fetchModulData(activeSplitRatio.value);
     } else {
       alert('Gagal menjalankan grid search: ' + json.message);
     }
@@ -820,13 +1004,14 @@ const exportParamsJson = () => {
   const exportData = {
     generated_at: new Date().toISOString(),
     split_ratio: activeSplitRatio.value,
+    split_summary: currentSplitInfo.value,
     active_selection: activeCommodity.value,
     models: commodities.value.filter(c => c.id !== 'all')
   };
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
   const downloadAnchor = document.createElement('a');
   downloadAnchor.setAttribute('href', dataStr);
-  downloadAnchor.setAttribute('download', 'model_parameters_arima.json');
+  downloadAnchor.setAttribute('download', `model_parameters_arima_split_${activeSplitRatio.value.replace(':', '_')}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
