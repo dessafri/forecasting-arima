@@ -1,0 +1,90 @@
+================================================================================
+          PANDUAN CARA MENJALANKAN APLIKASI (NUTRICAST / FORECASTING)
+================================================================================
+
+Berikut adalah panduan langkah demi langkah untuk menjalankan aplikasi Nutricast,
+mulai dari Frontend (Vue.js / Vite) hingga Backend (Flask / Python).
+
+--------------------------------------------------------------------------------
+PRASYARAT (PREREQUISITES)
+--------------------------------------------------------------------------------
+Pastikan di komputer Anda sudah terpasang:
+1. Node.js & npm (Download di https://nodejs.org)
+2. Python 3.9+ & pip (Download di https://www.python.org, pastikan centang "Add Python to PATH")
+
+--------------------------------------------------------------------------------
+LANGKAH 1: MENJALANKAN FRONTEND (TERMINAL 1)
+--------------------------------------------------------------------------------
+Buka jendela Terminal / Command Prompt pertama, lalu jalankan perintah berikut:
+
+1. Masuk ke direktori frontend:
+   cd frontend
+
+2. Install seluruh dependensi/paket npm:
+   npm install
+
+3. Jalankan server pengembang frontend:
+   npm run dev
+
+Keterangan:
+- Setelah dijalankan, frontend akan aktif di:
+  http://localhost:5173
+- JANGAN tutup jendela terminal ini selama aplikasi digunakan.
+
+--------------------------------------------------------------------------------
+LANGKAH 2: MENJALANKAN BACKEND (TERMINAL 2)
+--------------------------------------------------------------------------------
+Buka jendela Terminal / Command Prompt KEDUA (baru), lalu jalankan perintah:
+
+1. Masuk ke direktori backend:
+   cd backend
+
+2. Install dependensi Python:
+   pip install -r requirements.txt
+
+   *Catatan (jika pip tidak dikenali atau di macOS/Linux):
+    python -m pip install -r requirements.txt
+    atau
+    python3 -m pip install -r requirements.txt
+
+3. (Opsional / Sekali saja) Inisialisasi Database:
+   Jika file forecasting.db belum ada atau ingin reset database:
+   python init_db.py
+   (atau: python3 init_db.py)
+
+4. Jalankan backend server Flask:
+   python app.py
+   (atau: python3 app.py)
+
+Keterangan:
+- Backend REST API akan aktif di:
+  http://127.0.0.1:5001
+- JANGAN tutup jendela terminal ini selama aplikasi digunakan.
+
+--------------------------------------------------------------------------------
+LANGKAH 3: MEMBUKA APLIKASI
+--------------------------------------------------------------------------------
+1. Buka browser (Google Chrome, Microsoft Edge, Mozilla Firefox, dll.)
+2. Buka tautan berikut:
+   http://localhost:5173
+
+--------------------------------------------------------------------------------
+TIPS: CARA MENJALANKAN OTOMATIS (1 KLIK / 1 PERINTAH)
+--------------------------------------------------------------------------------
+Selain cara manual di atas, sudah tersedia skrip otomatis di folder root:
+
+- Untuk Pengguna WINDOWS:
+  Klik dua kali (double click) file:
+  run_app.bat
+
+- Untuk Pengguna macOS / LINUX:
+  Buka terminal di root project dan jalankan:
+  chmod +x run_app.sh
+  ./run_app.sh
+
+--------------------------------------------------------------------------------
+CARA MENGHENTIKAN APLIKASI
+--------------------------------------------------------------------------------
+Tekan tombol keyboard [Ctrl + C] di masing-masing jendela terminal (Terminal 1 dan 2)
+untuk mematikan server.
+================================================================================
