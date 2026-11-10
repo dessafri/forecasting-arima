@@ -163,7 +163,7 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
 <div class="flex flex-col">
 <div class="flex items-center gap-2">
 <h3 class="font-bold text-slate-900" style="font-size: 16px; line-height: 22px;" id="chart-commodity-title">{{ activeCommodity.name }}: Kurva Aktual vs Peramalan {{ activeCommodity.order }}</h3>
-<span class="text-sm font-semibold px-2 py-0.5 bg-surface-container-high rounded text-blue-500 font-medium">Split {{ activeSplitRatio }} (Train: {{ activeCommodity.train_size || '656' }} | Test: {{ activeCommodity.test_size || '165' }}) + 30 Hari Forecast</span>
+<span class="text-sm font-semibold px-2 py-0.5 bg-surface-container-high rounded text-blue-500 font-medium">Split {{ activeSplitRatio }} (Train: {{ activeCommodity.train_size || '656' }} | Test: {{ activeCommodity.test_size || '165' }}) · Prediksi s/d {{ forecastEndLabel }}</span>
 </div>
 
 </div>
@@ -187,7 +187,7 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
 </div>
 <div class="flex items-center gap-1.5">
 <span class="w-2.5 h-2.5 rounded-full bg-error"></span>
-<span class="text-sm font-semibold text-slate-900">Split Horizon</span>
+<span class="text-sm font-semibold text-slate-900">Data terakhir</span>
 </div>
 </div>
 </div>
@@ -265,7 +265,7 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
         class="hover:fill-rose-50/60 transition-colors"></rect>
   <line stroke="#ba1a1a" stroke-dasharray="4 3" stroke-width="2.5" x1="690" x2="690" y1="30" y2="290"></line>
   <circle cx="690" cy="30" fill="#ba1a1a" r="5" stroke="#ffffff" stroke-width="1.5"></circle>
-  <text class="font-label-sm font-bold select-none" fill="#ba1a1a" x="695" y="44">SPLIT HORIZON (Hari Ini)</text>
+  <text class="font-label-sm font-bold select-none" fill="#ba1a1a" x="698" y="44">{{ horizonDateLabel }}</text>
 </g>
 
 <!-- 95% Confidence Interval Ribbon (Upper and Lower bounds from x: 690 to 960) with Tooltip -->
@@ -328,13 +328,15 @@ p-value = {{ activeCommodity.adf_p }} <span class="text-slate-500">(&lt; 0.05)</
 
 <!-- X-Axis Labels (Timeline) -->
 <g class="text-[11px] font-mono text-outline">
-<text fill="#6d7a72" text-anchor="middle" x="60" y="315">T-60 (20 Jan)</text>
-<text fill="#6d7a72" text-anchor="middle" x="210" y="315">T-45 (04 Feb)</text>
-<text fill="#6d7a72" text-anchor="middle" x="360" y="315">T-30 (19 Feb)</text>
-<text fill="#00476e" font-weight="bold" text-anchor="middle" :x="splitX" y="315">Cutoff ({{ activeSplitRatio }})</text>
-<text fill="#ba1a1a" font-weight="bold" text-anchor="middle" x="690" y="315">Hari Ini (20 Mar)</text>
-<text fill="#006398" text-anchor="middle" x="810" y="315">T+15 (04 Apr)</text>
-<text fill="#006398" text-anchor="middle" x="960" y="315">T+30 (20 Apr)</text>
+<text
+  v-for="tick in axisLabels"
+  :key="tick.key"
+  :fill="tick.fill"
+  :font-weight="tick.weight"
+  text-anchor="middle"
+  :x="tick.x"
+  y="315"
+>{{ tick.label }}</text>
 </g>
 </svg>
 </div>
@@ -562,9 +564,30 @@ import MetricCard from '../components/MetricCard.vue';
 import Sidebar from '../components/Sidebar.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { formatDateString } from '../utils/dateFormatter';
+
+function toIsoDate(value) {
+  const match = String(value ?? '').trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (!match) return null;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return `${match[1]}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function shiftIsoDate(iso, days) {
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + days);
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 const router = useRouter();
 const hasData = ref(false);
+const lastDataDate = ref('');
 const isRunning = ref(false);
 const activeSplitRatio = ref('80:20');
 const rawCommodities = ref([]);
@@ -638,6 +661,7 @@ const fetchModulData = async (split = activeSplitRatio.value) => {
     const json = await res.json();
     if (json.status === 'success' && json.has_data && json.commodities.length > 0) {
       hasData.value = true;
+      lastDataDate.value = json.kpi?.date_end || json.last_update || '';
       rawCommodities.value = json.commodities;
       if (json.split_scenarios) {
         splitScenarios.value = json.split_scenarios;
@@ -647,6 +671,7 @@ const fetchModulData = async (split = activeSplitRatio.value) => {
       }
     } else {
       hasData.value = false;
+      lastDataDate.value = '';
       rawCommodities.value = [];
     }
   } catch (err) {
@@ -772,6 +797,25 @@ const splitX = computed(() => {
   return 564; // 80:20 default
 });
 
+function formatOffsetDate(days) {
+  const iso = toIsoDate(lastDataDate.value);
+  if (!iso) return '';
+  return formatDateString(shiftIsoDate(iso, days), 'short');
+}
+
+const horizonDateLabel = computed(() => formatOffsetDate(0));
+const forecastEndLabel = computed(() => formatOffsetDate(30) || '30 hari');
+
+const axisLabels = computed(() => [
+  { key: 'd-60', x: 60, label: formatOffsetDate(-60), fill: '#6d7a72', weight: 500 },
+  { key: 'd-45', x: 210, label: formatOffsetDate(-45), fill: '#6d7a72', weight: 500 },
+  { key: 'd-30', x: 360, label: formatOffsetDate(-30), fill: '#6d7a72', weight: 500 },
+  { key: 'cutoff', x: splitX.value, label: `Cutoff ${activeSplitRatio.value}`, fill: '#00476e', weight: 700 },
+  { key: 'd0', x: 690, label: formatOffsetDate(0), fill: '#ba1a1a', weight: 700 },
+  { key: 'd15', x: 810, label: formatOffsetDate(15), fill: '#006398', weight: 500 },
+  { key: 'd30', x: 960, label: formatOffsetDate(30), fill: '#006398', weight: 700 }
+]);
+
 const showTooltip = (event, data) => {
   const wrapper = document.getElementById('main-chart-wrapper');
   if (wrapper) {
@@ -805,11 +849,11 @@ const handleCutoffHover = (event) => {
 const handleSplitHover = (event) => {
   const currentPrice = chartPriceBase.value;
   showTooltip(event, {
-    title: 'Split Horizon (Hari Ini)',
-    subtitle: 'Batas Pemisah Data Riil Historis vs Horizon Prediksi 30 Hari',
+    title: horizonDateLabel.value || 'Data terakhir',
+    subtitle: 'Batas data aktual. Prediksi dimulai pada hari berikutnya.',
     value: 'Rp ' + Number(currentPrice).toLocaleString('id-ID'),
     ciRange: 'Titik Cutoff Horizon 0 (Data Aktual Terakhir)',
-    badge: 'SPLIT HORIZON',
+    badge: 'DATA TERAKHIR',
     badgeClass: 'bg-rose-950 text-rose-300 border-rose-800',
     notes: `Skenario Split: ${activeSplitRatio.value} | Model Fit: ${activeCommodity.value.order || 'ARIMA'} | MAPE: ${activeCommodity.value.mape}%`
   });
@@ -875,27 +919,28 @@ const forecastPathD = computed(() => {
 const forecastPoints = computed(() => {
   const base = chartPriceBase.value;
   const rawList = [
-    { cx: 690, cy: 140, r: 4.5, date: '20 Mar (Hari Ini)', offsetPct: 0.0, ciOffset: 0.0, title: 'Hari Ini (T-0)' },
-    { cx: 730, cy: 145, r: 4.5, date: '25 Mar (H+5)', offsetPct: -0.002, ciOffset: 0.015, title: '25 Mar (H+5)' },
-    { cx: 770, cy: 148, r: 4.5, date: '30 Mar (H+10)', offsetPct: -0.004, ciOffset: 0.018, title: '30 Mar (H+10)' },
-    { cx: 810, cy: 146, r: 4.5, date: '04 Apr (H+15)', offsetPct: -0.003, ciOffset: 0.022, title: '04 Apr (H+15)' },
-    { cx: 850, cy: 144, r: 4.5, date: '09 Apr (H+20)', offsetPct: -0.001, ciOffset: 0.026, title: '09 Apr (H+20)' },
-    { cx: 890, cy: 141, r: 4.5, date: '14 Apr (H+25)', offsetPct: 0.002, ciOffset: 0.030, title: '14 Apr (H+25)' },
-    { cx: 930, cy: 138, r: 4.5, date: '19 Apr (H+29)', offsetPct: 0.004, ciOffset: 0.034, title: '19 Apr (H+29)' },
-    { cx: 960, cy: 135, r: 5.5, fill: '#00855d', date: '20 Apr (H+30)', offsetPct: 0.006, ciOffset: 0.038, title: '20 Apr (H+30)' }
+    { cx: 690, cy: 140, r: 4.5, day: 0, offsetPct: 0.0, ciOffset: 0.0 },
+    { cx: 730, cy: 145, r: 4.5, day: 5, offsetPct: -0.002, ciOffset: 0.015 },
+    { cx: 770, cy: 148, r: 4.5, day: 10, offsetPct: -0.004, ciOffset: 0.018 },
+    { cx: 810, cy: 146, r: 4.5, day: 15, offsetPct: -0.003, ciOffset: 0.022 },
+    { cx: 850, cy: 144, r: 4.5, day: 20, offsetPct: -0.001, ciOffset: 0.026 },
+    { cx: 890, cy: 141, r: 4.5, day: 25, offsetPct: 0.002, ciOffset: 0.030 },
+    { cx: 930, cy: 138, r: 4.5, day: 29, offsetPct: 0.004, ciOffset: 0.034 },
+    { cx: 960, cy: 135, r: 5.5, fill: '#00855d', day: 30, offsetPct: 0.006, ciOffset: 0.038 }
   ];
 
   return rawList.map(item => {
     const val = Math.round(base * (1 + item.offsetPct));
     const ciDelta = Math.round(base * item.ciOffset);
+    const label = formatOffsetDate(item.day);
     return {
       ...item,
-      title: item.title,
-      subtitle: item.cx === 690 ? 'Titik Awal Split Horizon' : 'Proyeksi Titik Deret Waktu Masa Depan',
+      title: label,
+      subtitle: item.day === 0 ? 'Data aktual terakhir' : 'Proyeksi setelah tanggal data terakhir',
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
-      ciRange: ciDelta === 0 ? 'Data Aktual Titik Awal' : `Rp ${(val - ciDelta).toLocaleString('id-ID')} - Rp ${(val + ciDelta).toLocaleString('id-ID')}`,
-      badge: item.cx === 690 ? 'SPLIT HORIZON' : 'ARIMA FORECAST',
-      badgeClass: item.cx === 690 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800',
+      ciRange: ciDelta === 0 ? 'Data aktual titik awal' : `Rp ${(val - ciDelta).toLocaleString('id-ID')} - Rp ${(val + ciDelta).toLocaleString('id-ID')}`,
+      badge: item.day === 0 ? 'DATA TERAKHIR' : 'PREDIKSI',
+      badgeClass: item.day === 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800',
       notes: `Model: ${activeCommodity.value.order || 'ARIMA'} (AIC: ${activeCommodity.value.aic || '412.3'}) | Skenario: ${activeSplitRatio.value}`
     };
   });
@@ -906,24 +951,23 @@ const testingPoints = computed(() => {
   let rawList = [];
   if (activeSplitRatio.value === '70:30') {
     rawList = [
-      { cx: 501, cy: 172, r: 3.5, date: '20 Feb (T-28)', offset: -0.012 },
-      { cx: 540, cy: 168, r: 3.5, date: '25 Feb (T-23)', offset: -0.010 },
-      { cx: 580, cy: 162, r: 3.5, date: '03 Mar (T-17)', offset: -0.007 },
-      { cx: 620, cy: 154, r: 3.5, date: '10 Mar (T-10)', offset: -0.004 },
-      { cx: 655, cy: 147, r: 3.5, date: '16 Mar (T-4)', offset: -0.002 }
+      { cx: 501, cy: 172, r: 3.5, day: -28, offset: -0.012 },
+      { cx: 540, cy: 168, r: 3.5, day: -23, offset: -0.010 },
+      { cx: 580, cy: 162, r: 3.5, day: -17, offset: -0.007 },
+      { cx: 620, cy: 154, r: 3.5, day: -10, offset: -0.004 },
+      { cx: 655, cy: 147, r: 3.5, day: -4, offset: -0.002 }
     ];
   } else if (activeSplitRatio.value === '90:10') {
     rawList = [
-      { cx: 627, cy: 150, r: 3.5, date: '11 Mar (T-9)', offset: -0.003 },
-      { cx: 658, cy: 145, r: 3.5, date: '16 Mar (T-4)', offset: -0.001 }
+      { cx: 627, cy: 150, r: 3.5, day: -9, offset: -0.003 },
+      { cx: 658, cy: 145, r: 3.5, day: -4, offset: -0.001 }
     ];
   } else {
-    // 80:20
     rawList = [
-      { cx: 564, cy: 164, r: 3.5, date: '01 Mar (T-19)', offset: -0.009 },
-      { cx: 600, cy: 158, r: 3.5, date: '06 Mar (T-14)', offset: -0.006 },
-      { cx: 630, cy: 152, r: 3.5, date: '11 Mar (T-9)', offset: -0.003 },
-      { cx: 660, cy: 148, r: 3.5, date: '16 Mar (T-4)', offset: -0.001 }
+      { cx: 564, cy: 164, r: 3.5, day: -19, offset: -0.009 },
+      { cx: 600, cy: 158, r: 3.5, day: -14, offset: -0.006 },
+      { cx: 630, cy: 152, r: 3.5, day: -9, offset: -0.003 },
+      { cx: 660, cy: 148, r: 3.5, day: -4, offset: -0.001 }
     ];
   }
 
@@ -931,7 +975,7 @@ const testingPoints = computed(() => {
     const val = Math.round(base * (1 + item.offset));
     return {
       ...item,
-      title: item.date,
+      title: formatOffsetDate(item.day),
       subtitle: `Data Aktual Pengujian Testing (${currentSplitInfo.value.test_size} observasi, ${currentSplitInfo.value.test_pct}%)`,
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
       ciRange: 'Data Riil Terverifikasi',
@@ -945,28 +989,27 @@ const testingPoints = computed(() => {
 const trainingPoints = computed(() => {
   const base = chartPriceBase.value;
   let rawList = [
-    { cx: 60, cy: 260, date: '20 Jan (T-60)', offset: -0.04 },
-    { cx: 180, cy: 240, date: '01 Feb (T-48)', offset: -0.03 },
-    { cx: 300, cy: 215, date: '13 Feb (T-36)', offset: -0.02 },
-    { cx: 420, cy: 185, date: '25 Feb (T-24)', offset: -0.012 }
+    { cx: 60, cy: 260, day: -60, offset: -0.04 },
+    { cx: 180, cy: 240, day: -48, offset: -0.03 },
+    { cx: 300, cy: 215, day: -36, offset: -0.02 },
+    { cx: 420, cy: 185, day: -24, offset: -0.012 }
   ];
   if (activeSplitRatio.value === '70:30') {
-    rawList.push({ cx: 480, cy: 176, date: '18 Feb (T-30)', offset: -0.008 });
+    rawList.push({ cx: 480, cy: 176, day: -30, offset: -0.008 });
   } else if (activeSplitRatio.value === '80:20') {
-    rawList.push({ cx: 480, cy: 178, date: '20 Feb (T-28)', offset: -0.008 });
-    rawList.push({ cx: 530, cy: 170, date: '27 Feb (T-21)', offset: -0.005 });
+    rawList.push({ cx: 480, cy: 178, day: -28, offset: -0.008 });
+    rawList.push({ cx: 530, cy: 170, day: -21, offset: -0.005 });
   } else {
-    // 90:10
-    rawList.push({ cx: 480, cy: 178, date: '20 Feb (T-28)', offset: -0.008 });
-    rawList.push({ cx: 540, cy: 168, date: '28 Feb (T-20)', offset: -0.005 });
-    rawList.push({ cx: 590, cy: 158, date: '06 Mar (T-14)', offset: -0.003 });
+    rawList.push({ cx: 480, cy: 178, day: -28, offset: -0.008 });
+    rawList.push({ cx: 540, cy: 168, day: -20, offset: -0.005 });
+    rawList.push({ cx: 590, cy: 158, day: -14, offset: -0.003 });
   }
 
   return rawList.map(item => {
     const val = Math.round(base * (1 + item.offset));
     return {
       ...item,
-      title: item.date,
+      title: formatOffsetDate(item.day),
       subtitle: `Data Historis Pelatihan Model (${currentSplitInfo.value.train_size} observasi, ${currentSplitInfo.value.train_pct}%)`,
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
       ciRange: 'Observasi Historis Harian In-Sample',

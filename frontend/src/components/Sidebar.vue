@@ -7,39 +7,29 @@
       <div class="px-space-md py-space-xs">
         <span class="text-sm font-medium text-slate-500 uppercase tracking-wider px-space-sm">Modul &amp; Analitik</span>
       </div>
-      <nav class="flex flex-col gap-1 px-space-md" data-active-classes="bg-blue-50 text-blue-700 border border-blue-200 font-medium font-semibold rounded-lg shadow-sm">
-        <router-link class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all" to="/dashboard">
+      <nav class="flex flex-col gap-1 px-space-md">
+        <router-link to="/dashboard" :class="itemClass(isDashboard)" :aria-current="isDashboard ? 'page' : undefined">
           <span class="material-symbols-outlined text-[20px]">dashboard</span>
           <span class="text-sm">Ringkasan &amp; Dashboard</span>
         </router-link>
         <details class="group" open>
-          <summary class="flex items-center justify-between px-space-sm py-2 rounded-lg text-slate-500 hover:bg-surface-container-high hover:text-slate-900 transition-all cursor-pointer list-none [&::-webkit-details-marker]:hidden group">
+          <summary :class="pipelineClass">
             <div class="flex items-center gap-space-sm">
               <span class="material-symbols-outlined text-[20px]">folder_copy</span>
               <span class="text-sm">Modul Pipeline</span>
             </div>
             <span class="material-symbols-outlined text-[18px] group-open:rotate-180 transition-transform">expand_more</span>
           </summary>
-          <div class="flex flex-col gap-1 pl-6 mt-1 border-l-2 border-surface-container-high ml-3">
-            <router-link class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all" to="/modul-1">
-              <span class="material-symbols-outlined text-[20px]">database</span>
-              <span class="text-sm">Modul 1: Manajemen Dataset</span>
-            </router-link>
-            <router-link class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all" to="/modul-2">
-              <span class="material-symbols-outlined text-[20px]">trending_up</span>
-              <span class="text-sm">Modul 2: Forecasting ARIMA</span>
-            </router-link>
-            <router-link class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all" to="/modul-3">
-              <span class="material-symbols-outlined text-[20px]">insights</span>
-              <span class="text-sm">Modul 3: Financial Pattern (FPR)</span>
-            </router-link>
-            <router-link class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all" to="/modul-4">
-              <span class="material-symbols-outlined text-[20px]">tune</span>
-              <span class="text-sm">Modul 4: Optimasi GWO</span>
-            </router-link>
-            <router-link class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all" to="/modul-5">
-              <span class="material-symbols-outlined text-[20px]">restaurant_menu</span>
-              <span class="text-sm">Modul 5: Menu PMT &amp; Export</span>
+          <div class="flex flex-col gap-1 pl-6 mt-1 border-l-2 border-slate-100 ml-3">
+            <router-link
+              v-for="item in pipelineItems"
+              :key="item.to"
+              :to="item.to"
+              :class="itemClass(isNamed(item.names))"
+              :aria-current="isNamed(item.names) ? 'page' : undefined"
+            >
+              <span class="material-symbols-outlined text-[20px]">{{ item.icon }}</span>
+              <span class="text-sm">{{ item.label }}</span>
             </router-link>
           </div>
         </details>
@@ -49,5 +39,39 @@
 </template>
 
 <script setup>
-// Reusable Sidebar Component
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const pipelineItems = [
+  { to: '/modul-1', label: 'Modul 1: Manajemen Dataset', icon: 'database', names: ['Modul1Dataset'] },
+  { to: '/modul-2', label: 'Modul 2: Forecasting ARIMA', icon: 'trending_up', names: ['Modul2Forecasting', 'Modul2Evaluasi'] },
+  { to: '/modul-3', label: 'Modul 3: Financial Pattern (FPR)', icon: 'insights', names: ['Modul3FPR'] },
+  { to: '/modul-4', label: 'Modul 4: Optimasi GWO', icon: 'tune', names: ['Modul4GWO'] },
+  { to: '/modul-5', label: 'Modul 5: Menu PMT & Export', icon: 'restaurant_menu', names: ['Modul5MenuPMT'] }
+];
+
+const isDashboard = computed(() => route.name === 'Dashboard');
+const pipelineActive = computed(() => pipelineItems.some(item => item.names.includes(route.name)));
+
+function isNamed(names) {
+  return names.includes(route.name);
+}
+
+function itemClass(active) {
+  return [
+    'flex items-center gap-space-sm px-space-sm py-2 rounded-lg transition-all border',
+    active
+      ? 'bg-blue-50 text-blue-700 border-blue-200 font-semibold shadow-sm'
+      : 'text-slate-500 border-transparent hover:bg-slate-50 hover:text-slate-900'
+  ];
+}
+
+const pipelineClass = computed(() => [
+  'flex items-center justify-between px-space-sm py-2 rounded-lg transition-all cursor-pointer list-none [&::-webkit-details-marker]:hidden',
+  pipelineActive.value
+    ? 'bg-blue-50 text-blue-700 font-semibold'
+    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+]);
 </script>

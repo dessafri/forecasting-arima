@@ -19,19 +19,6 @@
   }
 }
 
-@layer components {
-  /* Style for Active Sidebar Route (Emerald Style) */
-  nav .router-link-exact-active {
-    @apply bg-emerald-50 text-[#0f3d32] font-semibold border-l-4 border-[#047857] shadow-sm transition-all !important;
-  }
-  nav .router-link-exact-active .material-symbols-outlined {
-    @apply text-[#047857] !important;
-  }
-  nav .router-link-exact-active span:not(.material-symbols-outlined) {
-    @apply font-semibold !important;
-  }
-}
-
 ::-webkit-scrollbar {
   display: none;
 }

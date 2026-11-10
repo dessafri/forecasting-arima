@@ -121,10 +121,84 @@
                   </label>
                   <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-lg select-none hover:bg-slate-50 transition-colors">
                     <input v-model="showSplit" class="accent-secondary w-4 h-4 rounded cursor-pointer" id="toggle-split" type="checkbox">
-                    <span class="text-sm font-semibold text-slate-900">Split Horizon</span>
+                    <span class="text-sm font-semibold text-slate-900">Batas data</span>
                   </label>
                 </div>
               </div>
+
+              <!-- Pencarian hasil prediksi berdasarkan tanggal -->
+              <form class="flex flex-col gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3" @submit.prevent="applyDateSearch">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="material-symbols-outlined text-blue-600 text-[20px]">search</span>
+                  <label for="forecast-date-search" class="text-sm font-semibold text-slate-800">Cari tanggal prediksi</label>
+                  <input
+                    id="forecast-date-search"
+                    v-model="searchDate"
+                    type="date"
+                    :min="forecastWindow.min || undefined"
+                    :max="forecastWindow.max || undefined"
+                    class="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-400"
+                  />
+                  <button type="submit" class="h-9 rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700">
+                    Lihat hasil
+                  </button>
+                  <button
+                    v-if="appliedSearchDate"
+                    type="button"
+                    class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                    @click="clearDateSearch"
+                  >
+                    Reset
+                  </button>
+                  <span v-if="forecastWindow.min" class="text-xs text-slate-500">
+                    Horizon: {{ formatDateString(forecastWindow.min) }} s/d {{ formatDateString(forecastWindow.max) }}
+                  </span>
+                </div>
+
+                <p v-if="predictionLookup.kind === 'idle'" class="text-sm text-slate-600">
+                  Pilih tanggal ke depan dalam horizon. Harga prediksi ARIMA untuk tanggal itu langsung ditampilkan.
+                </p>
+                <p v-else-if="predictionLookup.kind === 'outside'" class="text-sm font-medium text-rose-700">
+                  Tanggal {{ predictionLookup.dateStr }} berada di luar horizon prediksi. Cari antara {{ formatDateString(predictionLookup.min) }} dan {{ formatDateString(predictionLookup.max) }}.
+                </p>
+                <p v-else-if="predictionLookup.kind === 'nodate'" class="text-sm font-medium text-amber-700">
+                  Prediksi belum memiliki tanggal kalender, jadi pencarian tanggal belum bisa dipakai.
+                </p>
+                <p v-else-if="predictionLookup.kind === 'missing'" class="text-sm font-medium text-amber-700">
+                  Tidak ada prediksi pada {{ predictionLookup.dateStr }} untuk komoditas yang sedang ditampilkan.
+                </p>
+                <div v-else data-testid="prediction-search-results" class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+                  <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100">
+                    <span class="text-sm font-semibold text-slate-900">Hasil prediksi {{ predictionLookup.dateStr }}</span>
+                    <span class="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded">ARIMA</span>
+                  </div>
+                  <table class="w-full min-w-[760px] whitespace-nowrap text-left text-sm">
+                    <thead>
+                      <tr class="text-xs uppercase tracking-wide text-slate-500">
+                        <th class="px-3 py-2 font-medium">Komoditas</th>
+                        <th class="px-3 py-2 font-medium">Harga prediksi</th>
+                        <th class="px-3 py-2 font-medium">Pita 95%</th>
+                        <th class="px-3 py-2 font-medium">Vs hari sebelumnya</th>
+                        <th class="px-3 py-2 font-medium">Vs {{ baselineDateLabel }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in predictionLookup.rows" :key="row.id" class="border-t border-slate-100">
+                        <td class="px-3 py-2 font-semibold text-slate-900">
+                          <span class="inline-flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full shrink-0" :style="{ backgroundColor: row.color }"></span>
+                            {{ row.name }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2 font-semibold text-slate-900">{{ row.price }}</td>
+                        <td class="px-3 py-2 text-slate-600">{{ row.ciLower }} – {{ row.ciUpper }}</td>
+                        <td class="px-3 py-2 font-semibold" :class="row.diffClass">{{ row.diff }}</td>
+                        <td class="px-3 py-2 text-slate-600">{{ row.pct }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </form>
 
               <!-- Chart Canvas + Diagnostic Side Panels -->
               <div class="flex flex-col gap-space-md">
@@ -150,11 +224,18 @@
                         <text fill="#3d4a42" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="end" x="45" :y="tick.y + 4">{{ tick.label }}</text>
                       </g>
 
-                      <!-- Split Horizon Line -->
+                      <!-- Marker tanggal yang sedang dicari -->
+                      <g v-if="predictionLookup.kind === 'hit'">
+                        <line stroke="#2563eb" stroke-width="1.5" :x1="predictionLookup.x" :x2="predictionLookup.x" y1="20" y2="280"></line>
+                        <rect fill="#dbeafe" height="16" rx="4" width="92" :x="predictionLookup.x - 46" y="4"></rect>
+                        <text fill="#1d4ed8" font-family="Inter, sans-serif" font-size="9" font-weight="600" text-anchor="middle" :x="predictionLookup.x" y="15">{{ predictionLookup.dateShort }}</text>
+                      </g>
+
+                      <!-- Garis batas data aktual dan prediksi -->
                       <g v-if="showSplit" id="split-line-group">
                         <line stroke="#ba1a1a" stroke-dasharray="5,5" stroke-width="1.5" :x1="splitX" :x2="splitX" y1="20" y2="280"></line>
-                        <rect fill="#ffdad6" height="18" rx="4" width="100" :x="splitX - 50" y="22"></rect>
-                        <text fill="#93000a" font-family="Inter, sans-serif" font-size="9" font-weight="600" text-anchor="middle" :x="splitX" y="34">SPLIT (Hari Ini)</text>
+                        <rect fill="#ffdad6" height="18" rx="4" width="84" :x="splitX - 42" y="22"></rect>
+                        <text fill="#93000a" font-family="Inter, sans-serif" font-size="9" font-weight="600" text-anchor="middle" :x="splitX" y="34">{{ splitDateLabel }}</text>
                       </g>
 
                       <!-- Confidence Interval 95% Area / Ribbon (Dinamis: Berfungsi di mode Single maupun ALL) -->
@@ -188,21 +269,34 @@
 
                       <!-- Interactive Hover Circles -->
                       <g v-for="s in chartData.series" :key="'points-'+s.id">
-                        <circle v-for="pt in s.mapped" :key="pt.day" 
-                          :cx="pt.x" :cy="pt.y" r="7" fill="transparent" 
-                          class="cursor-pointer transition-all hover:opacity-75 hover:fill-blue-600"
-                          @mouseover="showTooltip($event, { date: pt.dateStr, name: s.name, price: pt.priceStr, pct: pt.pctStr, diff: pt.diffStr, diffColor: pt.diffColor, type: pt.type })"
-                          @mousemove="showTooltip($event, { date: pt.dateStr, name: s.name, price: pt.priceStr, pct: pt.pctStr, diff: pt.diffStr, diffColor: pt.diffColor, type: pt.type })"
-                          @mouseleave="hideTooltip">
-                        </circle>
+                        <template v-for="pt in s.mapped" :key="pt.day">
+                          <circle
+                            v-if="appliedSearchDate && pt.isoDate === appliedSearchDate && pt.type === 'forecast'"
+                            :cx="pt.x" :cy="pt.y" r="5" :fill="s.color" stroke="#ffffff" stroke-width="1.5"
+                            class="pointer-events-none"
+                          />
+                          <circle
+                            :cx="pt.x" :cy="pt.y" r="7" fill="transparent"
+                            class="cursor-pointer transition-all hover:opacity-75 hover:fill-blue-600"
+                            @mouseover="showTooltip($event, { date: pt.dateStr, name: s.name, price: pt.priceStr, pct: pt.pctStr, diff: pt.diffStr, diffColor: pt.diffColor, type: pt.type })"
+                            @mousemove="showTooltip($event, { date: pt.dateStr, name: s.name, price: pt.priceStr, pct: pt.pctStr, diff: pt.diffStr, diffColor: pt.diffColor, type: pt.type })"
+                            @mouseleave="hideTooltip">
+                          </circle>
+                        </template>
                       </g>
 
                       <!-- Bottom X-Axis Markers -->
-                      <text fill="#3d4a42" font-family="JetBrains Mono, monospace" font-size="10" x="50" y="300">T-30 Hari</text>
-                      <text fill="#3d4a42" font-family="JetBrains Mono, monospace" font-size="10" x="230" y="300">T-15 Hari</text>
-                      <text fill="#ba1a1a" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" :x="splitX - 25" y="300">Hari Ini</text>
-                      <text fill="#3d4a42" font-family="JetBrains Mono, monospace" font-size="10" x="585" y="300">T+15 Hari</text>
-                      <text fill="#3d4a42" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="end" x="780" y="300">T+30 Hari</text>
+                      <text
+                        v-for="(tick, i) in axisDateLabels"
+                        :key="'xtick'+i"
+                        :fill="tick.fill"
+                        font-family="JetBrains Mono, monospace"
+                        font-size="10"
+                        :font-weight="tick.weight"
+                        :text-anchor="tick.anchor"
+                        :x="tick.x"
+                        y="300"
+                      >{{ tick.label }}</text>
                     </svg>
 
                     <!-- Hover Tooltip -->
@@ -226,11 +320,11 @@
                     <div class="flex items-center gap-4 flex-wrap">
                       <div class="flex items-center gap-1.5">
                         <span class="w-3 h-0.5 bg-primary"></span>
-                        <span class="text-slate-900 font-medium">Data Historis Aktual (30 Hari)</span>
+                        <span class="text-slate-900 font-medium">Data historis aktual{{ chartPeriods.historic ? ' (' + chartPeriods.historic + ')' : '' }}</span>
                       </div>
                       <div class="flex items-center gap-1.5">
                         <span class="w-3 h-0.5 border-t-2 border-dashed border-secondary"></span>
-                        <span class="text-slate-900 font-medium">ARIMA Forecast Proyeksi (h=30)</span>
+                        <span class="text-slate-900 font-medium">Prediksi ARIMA{{ chartPeriods.forecast ? ' (' + chartPeriods.forecast + ')' : '' }}</span>
                       </div>
                       <div class="flex items-center gap-1.5">
                         <span class="w-3 h-3 bg-secondary/20 rounded-sm"></span>
@@ -238,7 +332,7 @@
                       </div>
                     </div>
                     <div class="text-xs font-semibold text-slate-600">
-                      Horizon: <span class="font-semibold text-blue-600">30 Hari ke Depan</span>
+                      Sampai: <span class="font-semibold text-blue-600">{{ chartPeriods.until || '-' }}</span>
                     </div>
                   </div>
                 </div>
@@ -394,13 +488,33 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import BaseButton from '../components/BaseButton.vue';
 import Navbar from '../components/Navbar.vue';
 import MetricCard from '../components/MetricCard.vue';
 import Sidebar from '../components/Sidebar.vue';
 import { formatDateString } from '../utils/dateFormatter';
+
+function toIsoDate(value) {
+  const str = String(value ?? '').trim();
+  const match = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (!match) return null;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return `${match[1]}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function shiftIsoDate(iso, days) {
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + days);
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 const router = useRouter();
 const hasData = ref(false);
@@ -410,6 +524,8 @@ const scaleMode = ref('index'); // 'index' or 'nominal'
 const showCI = ref(true);
 const showSplit = ref(true);
 const tooltip = ref({ visible: false, x: 0, y: 0, data: null });
+const searchDate = ref('');
+const appliedSearchDate = ref('');
 
 const dashboardData = ref({
   date_range: '',
@@ -541,6 +657,9 @@ const chartData = computed(() => {
 
   const resultSeries = activeSeries.map(s => {
     const totalPts = s.points.length;
+    const historicPoints = (s.points || []).filter(point => point.type === 'historic');
+    const anchorIso = historicPoints.length ? toIsoDate(historicPoints[historicPoints.length - 1].date) : null;
+    const baselineDate = formatDateString(toIsoDate(historicPoints[0]?.date) || anchorIso || '', 'short');
     const mapped = s.points.map((pt, i) => {
       const x = 50 + i * (730 / Math.max(1, totalPts - 1));
       const val = isIndexMode ? (pt.pct_change || 0) : pt.price;
@@ -558,15 +677,24 @@ const chartData = computed(() => {
       const diff = pt.price - prevPrice;
       let diffStr = 'Tetap';
       let diffColor = 'text-slate-400';
+      let diffClass = 'text-slate-500';
       if (diff > 0) {
         diffStr = '+Rp ' + Number(diff).toLocaleString('id-ID');
         diffColor = 'text-emerald-400';
+        diffClass = 'text-emerald-600';
       } else if (diff < 0) {
         diffStr = '-Rp ' + Number(Math.abs(diff)).toLocaleString('id-ID');
         diffColor = 'text-rose-400';
+        diffClass = 'text-rose-600';
       }
 
-      const pctStr = (pt.pct_change > 0 ? '+' : '') + (pt.pct_change || 0) + '% dari T-30';
+      const pctStr = (pt.pct_change > 0 ? '+' : '') + (pt.pct_change || 0) + '% dari ' + (baselineDate || 'awal periode');
+      const directIso = toIsoDate(pt.date);
+      const isoDate = directIso || (
+        anchorIso != null && Number.isFinite(Number(pt.day))
+          ? shiftIsoDate(anchorIso, Number(pt.day))
+          : null
+      );
 
       return {
         ...pt,
@@ -574,11 +702,13 @@ const chartData = computed(() => {
         y,
         ciUpperY,
         ciLowerY,
-        dateStr: formatDateString(pt.date),
+        isoDate,
+        dateStr: formatDateString(isoDate || pt.date),
         priceStr: 'Rp ' + Number(pt.price).toLocaleString('id-ID'),
         pctStr,
         diffStr,
-        diffColor
+        diffColor,
+        diffClass
       };
     });
 
@@ -614,6 +744,79 @@ const splitX = computed(() => {
   if (!s || !s.mapped) return 415;
   const lastHist = s.mapped.filter(pt => pt.type === 'historic').pop();
   return lastHist ? lastHist.x : 415;
+});
+
+function chartPointDate(point) {
+  if (!point) return '';
+  return formatDateString(point.isoDate || point.date, 'short');
+}
+
+const splitDateLabel = computed(() => {
+  const series = chartData.value.series[0];
+  const lastHist = series?.mapped?.filter(point => point.type === 'historic').pop();
+  return chartPointDate(lastHist);
+});
+
+const baselineDateLabel = computed(() => {
+  const series = chartData.value.series[0];
+  const first = series?.mapped?.find(point => point.type === 'historic') || series?.mapped?.[0];
+  return chartPointDate(first) || 'awal periode';
+});
+
+const chartPeriods = computed(() => {
+  const series = chartData.value.series[0];
+  const points = series?.mapped || [];
+  const historic = points.filter(point => point.type === 'historic');
+  const forecast = points.filter(point => point.type === 'forecast');
+  const first = historic[0];
+  const lastHist = historic[historic.length - 1];
+  const firstForecast = forecast[0];
+  const lastForecast = forecast[forecast.length - 1];
+  return {
+    historic: first && lastHist ? `${chartPointDate(first)} – ${chartPointDate(lastHist)}` : '',
+    forecast: firstForecast && lastForecast ? `${chartPointDate(firstForecast)} – ${chartPointDate(lastForecast)}` : '',
+    until: chartPointDate(lastForecast)
+  };
+});
+
+const axisDateLabels = computed(() => {
+  const series = chartData.value.series[0];
+  const points = series?.mapped || [];
+  if (!points.length) return [];
+
+  const historic = points.filter(point => point.type === 'historic');
+  const forecast = points.filter(point => point.type === 'forecast');
+  const first = historic[0] || points[0];
+  const lastHist = historic[historic.length - 1] || first;
+  const last = forecast[forecast.length - 1] || points[points.length - 1];
+  const midHist = historic.length > 2 ? historic[Math.floor((historic.length - 1) / 2)] : null;
+  const midForecast = forecast.length > 2 ? forecast[Math.floor((forecast.length - 1) / 2)] : null;
+
+  const candidates = [
+    { point: first, emphasize: false },
+    midHist ? { point: midHist, emphasize: false } : null,
+    { point: lastHist, emphasize: true },
+    midForecast ? { point: midForecast, emphasize: false } : null,
+    { point: last, emphasize: false }
+  ].filter(Boolean);
+
+  const kept = [];
+  for (const item of candidates) {
+    const previous = kept[kept.length - 1];
+    if (previous && Math.abs(item.point.x - previous.point.x) < 78) {
+      if (item.emphasize && !previous.emphasize) kept[kept.length - 1] = item;
+      continue;
+    }
+    kept.push(item);
+  }
+
+  return kept.map((item, index) => ({
+    x: item.point.x,
+    label: chartPointDate(item.point),
+    anchor: index === 0 ? 'start' : index === kept.length - 1 ? 'end' : 'middle',
+    fill: item.emphasize ? '#ba1a1a' : '#3d4a42',
+    weight: item.emphasize ? 700 : 500
+  }));
 });
 
 const singlePolygonHist = computed(() => {
@@ -655,6 +858,75 @@ const singleCILowerLine = computed(() => {
   const lastHist = s.mapped.filter(pt => pt.type === 'historic').pop();
   const ciPts = lastHist ? [lastHist, ...pts] : pts;
   return ciPts.map(pt => pt.x + ',' + pt.ciLowerY).join(' ');
+});
+
+const forecastWindow = computed(() => {
+  const dates = [];
+  for (const series of chartData.value.series) {
+    for (const point of series.mapped || []) {
+      if (point.type === 'forecast' && point.isoDate) dates.push(point.isoDate);
+    }
+  }
+  if (!dates.length) return { min: '', max: '' };
+  dates.sort();
+  return { min: dates[0], max: dates[dates.length - 1] };
+});
+
+const predictionLookup = computed(() => {
+  const query = appliedSearchDate.value;
+  const window = forecastWindow.value;
+  if (!query) return { kind: 'idle' };
+  if (!window.min || !window.max) return { kind: 'nodate' };
+  if (query < window.min || query > window.max) {
+    return {
+      kind: 'outside',
+      min: window.min,
+      max: window.max,
+      dateStr: formatDateString(query)
+    };
+  }
+
+  const rows = [];
+  for (const series of chartData.value.series) {
+    const point = (series.mapped || []).find(item => item.type === 'forecast' && item.isoDate === query);
+    if (!point) continue;
+    rows.push({
+      id: series.id,
+      name: series.name,
+      color: series.color,
+      price: point.priceStr,
+      ciLower: point.ci_lower == null ? '-' : 'Rp ' + Number(point.ci_lower).toLocaleString('id-ID'),
+      ciUpper: point.ci_upper == null ? '-' : 'Rp ' + Number(point.ci_upper).toLocaleString('id-ID'),
+      pct: point.pctStr,
+      diff: point.diffStr,
+      diffClass: point.diffClass,
+      x: point.x
+    });
+  }
+
+  if (!rows.length) {
+    return { kind: 'missing', dateStr: formatDateString(query) };
+  }
+  return {
+    kind: 'hit',
+    dateStr: formatDateString(query),
+    dateShort: formatDateString(query, 'short'),
+    rows,
+    x: rows[0].x
+  };
+});
+
+function applyDateSearch() {
+  appliedSearchDate.value = searchDate.value;
+}
+
+function clearDateSearch() {
+  searchDate.value = '';
+  appliedSearchDate.value = '';
+}
+
+watch(searchDate, (value) => {
+  appliedSearchDate.value = value;
 });
 
 const yTicks = computed(() => {

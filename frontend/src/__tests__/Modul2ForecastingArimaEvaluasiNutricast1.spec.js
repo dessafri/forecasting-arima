@@ -89,4 +89,39 @@ describe('Modul2ForecastingArimaEvaluasiNutricast1 View', () => {
     expect(wrapper.text()).toContain('Beras Premium')
     expect(wrapper.text()).toContain('Jalankan Auto-ARIMA Grid Search')
   })
+
+  it('places the forecast after the last dataset date, not on the old sample calendar', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({
+        status: 'success',
+        has_data: true,
+        last_update: '2026-06-30',
+        kpi: { date_end: '2026-06-30' },
+        commodities: [
+          { id: 'beras', name: 'Beras Premium', latest_price: 14500, color: '#006948' }
+        ],
+        chart_series: []
+      })
+    })
+
+    const wrapper = mount(Modul2ForecastingArimaEvaluasiNutricast1, {
+      global: {
+        stubs: {
+          Sidebar: true,
+          Navbar: true,
+          BaseButton: { template: '<button><slot /></button>' }
+        }
+      }
+    })
+
+    await flushPromises()
+
+    const chartText = wrapper.find('#arima-main-svg').text()
+    expect(chartText).toContain('30 Jun 2026')
+    expect(chartText).toContain('15 Jul 2026')
+    expect(chartText).toContain('30 Jul 2026')
+    expect(chartText).not.toContain('Hari Ini')
+    expect(chartText).not.toContain('20 Mar')
+    expect(chartText).not.toContain('20 Apr')
+  })
 })

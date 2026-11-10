@@ -229,7 +229,7 @@ Modul 2: Time Series Forecasting ARIMA &amp; Evaluasi Diagnostik
         class="hover:fill-rose-50/60 transition-colors"></rect>
   <line stroke="#dc2626" stroke-dasharray="4 3" stroke-width="2.5" x1="690" x2="690" y1="26" y2="295"></line>
   <circle cx="690" cy="26" fill="#dc2626" r="5" stroke="#ffffff" stroke-width="1.5"></circle>
-  <text fill="#dc2626" font-family="'Inter', sans-serif" font-size="11" font-weight="700" x="698" y="38" class="select-none">SPLIT HORIZON (Hari Ini)</text>
+  <text fill="#dc2626" font-family="'Inter', sans-serif" font-size="11" font-weight="700" x="698" y="38" class="select-none">{{ horizonDateLabel }}</text>
 </g>
 
 <!-- 95% Confidence Interval Ribbon with Tooltip -->
@@ -298,13 +298,15 @@ M690,140 L730,145 L770,148 L810,146 L850,144 L890,141 L930,138 L960,135
 
 <!-- X-Axis Labels (Timeline Dates) with Clear Bottom Padding (Y=330, SVG height 380) -->
 <g fill="#475569" font-family="'JetBrains Mono', monospace" font-size="11">
-<text text-anchor="middle" x="75" y="328">T-60 (20 Jan)</text>
-<text text-anchor="middle" x="220" y="328">T-45 (04 Feb)</text>
-<text text-anchor="middle" x="370" y="328">T-30 (19 Feb)</text>
-<text text-anchor="middle" x="520" y="328">T-15 (05 Mar)</text>
-<text fill="#dc2626" font-weight="700" text-anchor="middle" x="690" y="328">Hari Ini (20 Mar)</text>
-<text fill="#0284c7" font-weight="600" text-anchor="middle" x="810" y="328">T+15 (04 Apr)</text>
-<text fill="#047857" font-weight="700" text-anchor="middle" x="960" y="328">T+30 (20 Apr)</text>
+<text
+  v-for="tick in axisLabels"
+  :key="tick.key"
+  :fill="tick.fill"
+  :font-weight="tick.weight"
+  text-anchor="middle"
+  :x="tick.x"
+  y="328"
+>{{ tick.label }}</text>
 </g>
 </svg>
 </div>
@@ -775,12 +777,63 @@ import BaseButton from '../components/BaseButton.vue';
 import Navbar from '../components/Navbar.vue';
 import MetricCard from '../components/MetricCard.vue';
 import Sidebar from '../components/Sidebar.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { formatDateString } from '../utils/dateFormatter';
+
+function toIsoDate(value) {
+  const match = String(value ?? '').trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (!match) return null;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return `${match[1]}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function shiftIsoDate(iso, days) {
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + days);
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 // Selected state
 const activeSplitRatio = ref('80:20');
 const activeCommodityName = ref('Beras Premium');
 const chartPriceBase = ref(14500);
+const lastDataDate = ref('');
+
+function formatOffsetDate(days) {
+  const iso = toIsoDate(lastDataDate.value);
+  if (!iso) return '';
+  return formatDateString(shiftIsoDate(iso, days), 'short');
+}
+
+const horizonDateLabel = computed(() => formatOffsetDate(0));
+
+const axisLabels = computed(() => [
+  { key: 'd-60', x: 75, label: formatOffsetDate(-60), fill: '#475569', weight: 500 },
+  { key: 'd-45', x: 220, label: formatOffsetDate(-45), fill: '#475569', weight: 500 },
+  { key: 'd-30', x: 370, label: formatOffsetDate(-30), fill: '#475569', weight: 500 },
+  { key: 'd-15', x: 520, label: formatOffsetDate(-15), fill: '#475569', weight: 500 },
+  { key: 'd0', x: 690, label: formatOffsetDate(0), fill: '#dc2626', weight: 700 },
+  { key: 'd15', x: 810, label: formatOffsetDate(15), fill: '#0284c7', weight: 600 },
+  { key: 'd30', x: 960, label: formatOffsetDate(30), fill: '#047857', weight: 700 }
+]);
+
+onMounted(async () => {
+  try {
+    const res = await fetch('http://127.0.0.1:5001/api/dashboard/summary');
+    const json = await res.json();
+    if (json.status === 'success' && json.has_data) {
+      lastDataDate.value = json.kpi?.date_end || json.last_update || '';
+    }
+  } catch (err) {
+    console.error('Error fetching Modul 2 evaluation dates:', err);
+  }
+});
 
 const chartPriceStep = computed(() => {
   return Math.max(100, Math.round((chartPriceBase.value * 0.02) / 50) * 50);
@@ -820,8 +873,8 @@ const hideTooltip = () => {
 const handleSplitHover = (event) => {
   const currentPrice = chartPriceBase.value;
   showTooltip(event, {
-    title: 'Split Horizon (Hari Ini)',
-    subtitle: 'Batas Pemisah Data Pelatihan/Uji vs Proyeksi 30 Hari',
+    title: horizonDateLabel.value || 'Data terakhir',
+    subtitle: 'Batas data aktual. Prediksi dimulai pada hari berikutnya.',
     value: 'Rp ' + Number(currentPrice).toLocaleString('id-ID'),
     ciRange: 'Titik Cutoff Horizon 0 (Data Aktual Terakhir)',
     badge: 'SPLIT HORIZON',
@@ -860,14 +913,14 @@ const handlePointHover = (event, pt) => {
 const forecastPoints = computed(() => {
   const base = chartPriceBase.value;
   const rawList = [
-    { cx: 690, cy: 140, r: 5, date: '20 Mar (Hari Ini)', offsetPct: 0.0, ciOffset: 0.0, title: 'Hari Ini (T-0)' },
-    { cx: 730, cy: 145, r: 5, date: '25 Mar (H+5)', offsetPct: -0.002, ciOffset: 0.015, title: '25 Mar (H+5)' },
-    { cx: 770, cy: 148, r: 5, date: '30 Mar (H+10)', offsetPct: -0.004, ciOffset: 0.018, title: '30 Mar (H+10)' },
-    { cx: 810, cy: 146, r: 5, date: '04 Apr (H+15)', offsetPct: -0.003, ciOffset: 0.022, title: '04 Apr (H+15)' },
-    { cx: 850, cy: 144, r: 5, date: '09 Apr (H+20)', offsetPct: -0.001, ciOffset: 0.026, title: '09 Apr (H+20)' },
-    { cx: 890, cy: 141, r: 5, date: '14 Apr (H+25)', offsetPct: 0.002, ciOffset: 0.030, title: '14 Apr (H+25)' },
-    { cx: 930, cy: 138, r: 5, date: '19 Apr (H+29)', offsetPct: 0.004, ciOffset: 0.034, title: '19 Apr (H+29)' },
-    { cx: 960, cy: 135, r: 5.5, fill: '#047857', date: '20 Apr (H+30)', offsetPct: 0.006, ciOffset: 0.038, title: '20 Apr (H+30)' }
+    { cx: 690, cy: 140, r: 5, day: 0, offsetPct: 0.0, ciOffset: 0.0 },
+    { cx: 730, cy: 145, r: 5, day: 5, offsetPct: -0.002, ciOffset: 0.015 },
+    { cx: 770, cy: 148, r: 5, day: 10, offsetPct: -0.004, ciOffset: 0.018 },
+    { cx: 810, cy: 146, r: 5, day: 15, offsetPct: -0.003, ciOffset: 0.022 },
+    { cx: 850, cy: 144, r: 5, day: 20, offsetPct: -0.001, ciOffset: 0.026 },
+    { cx: 890, cy: 141, r: 5, day: 25, offsetPct: 0.002, ciOffset: 0.030 },
+    { cx: 930, cy: 138, r: 5, day: 29, offsetPct: 0.004, ciOffset: 0.034 },
+    { cx: 960, cy: 135, r: 5.5, fill: '#047857', day: 30, offsetPct: 0.006, ciOffset: 0.038 }
   ];
 
   return rawList.map(item => {
@@ -875,11 +928,11 @@ const forecastPoints = computed(() => {
     const ciDelta = Math.round(base * item.ciOffset);
     return {
       ...item,
-      title: item.title,
-      subtitle: item.cx === 690 ? 'Titik Awal Split Horizon' : 'Proyeksi Titik Deret Waktu Masa Depan',
+      title: formatOffsetDate(item.day),
+      subtitle: item.day === 0 ? 'Data aktual terakhir' : 'Proyeksi setelah tanggal data terakhir',
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
-      ciRange: ciDelta === 0 ? 'Data Aktual Titik Awal' : `Rp ${(val - ciDelta).toLocaleString('id-ID')} - Rp ${(val + ciDelta).toLocaleString('id-ID')}`,
-      badge: item.cx === 690 ? 'SPLIT HORIZON' : 'ARIMA FORECAST',
+      ciRange: ciDelta === 0 ? 'Data aktual titik awal' : `Rp ${(val - ciDelta).toLocaleString('id-ID')} - Rp ${(val + ciDelta).toLocaleString('id-ID')}`,
+      badge: item.day === 0 ? 'DATA TERAKHIR' : 'PREDIKSI',
       badgeClass: item.cx === 690 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800',
       notes: 'Model: ARIMA(1, 1, 1) (AIC: 412.30)'
     };
@@ -889,17 +942,17 @@ const forecastPoints = computed(() => {
 const testingPoints = computed(() => {
   const base = chartPriceBase.value;
   const rawList = [
-    { cx: 560, cy: 165, r: 4, date: '01 Mar (T-18)', offset: -0.009 },
-    { cx: 600, cy: 158, r: 4, date: '06 Mar (T-13)', offset: -0.006 },
-    { cx: 630, cy: 152, r: 4, date: '11 Mar (T-8)', offset: -0.003 },
-    { cx: 660, cy: 148, r: 4, date: '16 Mar (T-3)', offset: -0.001 }
+    { cx: 560, cy: 165, r: 4, day: -18, offset: -0.009 },
+    { cx: 600, cy: 158, r: 4, day: -13, offset: -0.006 },
+    { cx: 630, cy: 152, r: 4, day: -8, offset: -0.003 },
+    { cx: 660, cy: 148, r: 4, day: -3, offset: -0.001 }
   ];
 
   return rawList.map(item => {
     const val = Math.round(base * (1 + item.offset));
     return {
       ...item,
-      title: item.date,
+      title: formatOffsetDate(item.day),
       subtitle: 'Data Aktual Testing (Out-of-Sample Validation)',
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
       ciRange: 'Data Riil Terverifikasi',
@@ -913,18 +966,18 @@ const testingPoints = computed(() => {
 const trainingPoints = computed(() => {
   const base = chartPriceBase.value;
   const rawList = [
-    { cx: 75, cy: 260, date: '20 Jan (T-60)', offset: -0.04 },
-    { cx: 190, cy: 240, date: '01 Feb (T-48)', offset: -0.03 },
-    { cx: 310, cy: 215, date: '13 Feb (T-36)', offset: -0.02 },
-    { cx: 430, cy: 185, date: '25 Feb (T-24)', offset: -0.012 },
-    { cx: 520, cy: 170, date: '05 Mar (T-15)', offset: -0.005 }
+    { cx: 75, cy: 260, day: -60, offset: -0.04 },
+    { cx: 190, cy: 240, day: -48, offset: -0.03 },
+    { cx: 310, cy: 215, day: -36, offset: -0.02 },
+    { cx: 430, cy: 185, day: -24, offset: -0.012 },
+    { cx: 520, cy: 170, day: -15, offset: -0.005 }
   ];
 
   return rawList.map(item => {
     const val = Math.round(base * (1 + item.offset));
     return {
       ...item,
-      title: item.date,
+      title: formatOffsetDate(item.day),
       subtitle: 'Data Historis Pelatihan Model (Training In-Sample)',
       value: 'Rp ' + Number(val).toLocaleString('id-ID'),
       ciRange: 'Observasi Historis Harian',
