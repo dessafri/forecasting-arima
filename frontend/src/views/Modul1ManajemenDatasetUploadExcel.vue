@@ -187,23 +187,83 @@
 </div>
 
 <!-- Preview Panel 1: Sheet 01 Harga Pangan -->
-<div v-if="activeTab === 'sheet1'" class="overflow-x-auto rounded-xl border border-slate-100 shadow-xs" id="previewSheet1">
+<div v-if="activeTab === 'sheet1'" class="flex flex-col gap-3" id="previewSheet1">
+<div class="flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+  <div class="flex flex-col gap-1">
+    <label for="harga-date-from" class="text-[11px] font-semibold uppercase text-slate-500">Dari tanggal</label>
+    <input
+      id="harga-date-from"
+      v-model="hargaDateFrom"
+      type="date"
+      :min="hargaBounds.min || undefined"
+      :max="hargaBounds.max || undefined"
+      class="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-400"
+    />
+  </div>
+  <div class="flex flex-col gap-1">
+    <label for="harga-date-to" class="text-[11px] font-semibold uppercase text-slate-500">Sampai tanggal</label>
+    <input
+      id="harga-date-to"
+      v-model="hargaDateTo"
+      type="date"
+      :min="hargaBounds.min || undefined"
+      :max="hargaBounds.max || undefined"
+      class="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-400"
+    />
+  </div>
+  <button
+    type="button"
+    class="h-9 rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700"
+    @click="applyHargaDateFilter"
+  >
+    Terapkan
+  </button>
+  <button
+    type="button"
+    class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
+    @click="clearHargaDateFilter"
+  >
+    Reset
+  </button>
+  <button
+    type="button"
+    class="h-9 rounded-lg border border-blue-200 bg-white px-3 text-sm font-medium text-blue-700 hover:bg-blue-50"
+    @click="showLast30HargaDays"
+  >
+    30 hari terakhir
+  </button>
+  <p class="text-xs text-slate-500 ml-auto">
+    Menampilkan <strong class="text-slate-800">{{ filteredHargaRows.length }}</strong>
+    dari <strong class="text-slate-800">{{ hargaRows.length }}</strong> baris
+  </p>
+</div>
+
+<div class="overflow-auto max-h-[min(70vh,520px)] rounded-xl border border-slate-100 shadow-xs">
 <table class="w-full text-left text-xs whitespace-nowrap">
-<thead>
-<tr class="bg-white border-b border-slate-100 text-slate-900 font-headline-sm text-body-sm">
-<th class="py-2.5 px-4 rounded-l-lg">Tanggal</th>
-<th v-for="col in commodityColumns" :key="col" class="py-2.5 px-3 text-right">{{ col }}</th>
+<thead class="sticky top-0 z-10 bg-white shadow-[0_1px_0_0_rgb(226,232,240)]">
+<tr class="border-b border-slate-100 text-slate-900 font-headline-sm text-body-sm">
+<th class="py-2.5 px-4 rounded-l-lg bg-white">Tanggal</th>
+<th v-for="col in commodityColumns" :key="col" class="py-2.5 px-3 text-right bg-white">{{ col }}</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-surface-container font-data-mono-sm text-slate-900">
-<tr v-for="(row, idx) in previewHarga" :key="idx" class="hover:bg-slate-50 transition-colors" :class="idx === previewHarga.length - 1 ? 'bg-primary/5 font-semibold text-blue-600' : ''">
-<td class="py-2.5 px-4 text-slate-900 font-medium">{{ formatDateString(row.Tanggal) }} {{ idx === previewHarga.length - 1 ? '(Terakhir)' : '' }}</td>
+<tr
+  v-for="(row, idx) in filteredHargaRows"
+  :key="row.Tanggal + '-' + idx"
+  class="hover:bg-slate-50 transition-colors"
+  :class="isLastHargaRow(row) ? 'bg-primary/5 font-semibold text-blue-600' : ''"
+>
+<td class="py-2.5 px-4 text-slate-900 font-medium">{{ formatDateString(row.Tanggal) }} {{ isLastHargaRow(row) ? '(Terakhir)' : '' }}</td>
 <td v-for="col in commodityColumns" :key="col" class="py-2.5 px-3 text-right">
 {{ Number(row[col] || 0).toLocaleString('id-ID') }}
 </td>
 </tr>
+<tr v-if="filteredHargaRows.length === 0">
+  <td :colspan="commodityColumns.length + 1" class="py-8 text-center text-slate-400">Tidak ada baris pada rentang tanggal ini.</td>
+</tr>
 </tbody>
 </table>
+</div>
 </div>
 
 <!-- Preview Panel 2: Sheet 02 Parameter Gizi TKPI -->
@@ -300,10 +360,14 @@ const showUploadModal = ref(false)
 const isUploading = ref(false)
 const activeTab = ref('sheet1')
 const searchQuery = ref('')
+const hargaRows = ref([])
+const hargaDateFrom = ref('')
+const hargaDateTo = ref('')
+const appliedHargaDateFrom = ref('')
+const appliedHargaDateTo = ref('')
 
 const statsList = ref([])
 const commodityColumns = ref([])
-const previewHarga = ref([])
 const tkpiList = ref([])
 const akgList = ref([])
 const totalRowsHarga = ref(0)
@@ -316,29 +380,97 @@ const filteredStats = computed(() => {
   return statsList.value.filter(s => s.komoditas.toLowerCase().includes(searchQuery.value.toLowerCase()))
 })
 
+function hargaIso(value) {
+  const str = String(value ?? '').trim()
+  const match = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
+  if (!match) return ''
+  const month = String(Number(match[2])).padStart(2, '0')
+  const day = String(Number(match[3])).padStart(2, '0')
+  return `${match[1]}-${month}-${day}`
+}
+
+const hargaBounds = computed(() => {
+  const rows = hargaRows.value
+  if (!rows.length) return { min: '', max: '' }
+  const isos = rows.map(r => hargaIso(r.Tanggal)).filter(Boolean).sort()
+  return { min: isos[0], max: isos[isos.length - 1] }
+})
+
+const lastHargaIso = computed(() => {
+  const bounds = hargaBounds.value
+  return bounds.max || ''
+})
+
+const filteredHargaRows = computed(() => {
+  let rows = hargaRows.value
+  if (appliedHargaDateFrom.value) {
+    rows = rows.filter(r => hargaIso(r.Tanggal) >= appliedHargaDateFrom.value)
+  }
+  if (appliedHargaDateTo.value) {
+    rows = rows.filter(r => hargaIso(r.Tanggal) <= appliedHargaDateTo.value)
+  }
+  return rows
+})
+
+function isLastHargaRow(row) {
+  return !!lastHargaIso.value && hargaIso(row.Tanggal) === lastHargaIso.value
+}
+
+function applyHargaDateFilter() {
+  appliedHargaDateFrom.value = hargaDateFrom.value
+  appliedHargaDateTo.value = hargaDateTo.value
+}
+
+function clearHargaDateFilter() {
+  hargaDateFrom.value = ''
+  hargaDateTo.value = ''
+  appliedHargaDateFrom.value = ''
+  appliedHargaDateTo.value = ''
+}
+
+function showLast30HargaDays() {
+  const max = hargaBounds.value.max
+  if (!max) return
+  const [y, m, d] = max.split('-').map(Number)
+  const end = new Date(Date.UTC(y, m - 1, d))
+  const start = new Date(end)
+  start.setUTCDate(start.getUTCDate() - 29)
+  const fmt = (dt) => {
+    const yy = dt.getUTCFullYear()
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, '0')
+    const dd = String(dt.getUTCDate()).padStart(2, '0')
+    return `${yy}-${mm}-${dd}`
+  }
+  hargaDateFrom.value = fmt(start)
+  hargaDateTo.value = max
+  applyHargaDateFilter()
+}
+
 const fetchExistingData = async () => {
   try {
-    const resStats = await fetch('http://127.0.0.1:5001/api/data/stats')
+    const resStats = await fetch('/api/data/stats')
     const jsonStats = await resStats.json()
     if (jsonStats.status === 'success' && jsonStats.stats && jsonStats.stats.length > 0) {
       statsList.value = jsonStats.stats
       commodityColumns.value = jsonStats.commodities || []
       isUploaded.value = true
 
-      const resHarga = await fetch('http://127.0.0.1:5001/api/data/harga_pangan')
+      const resHarga = await fetch('/api/data/harga_pangan')
       const jsonHarga = await resHarga.json()
       if (jsonHarga.status === 'success' && jsonHarga.data) {
-        previewHarga.value = jsonHarga.data.slice(-5)
+        hargaRows.value = jsonHarga.data
         totalRowsHarga.value = jsonHarga.data.length
+        clearHargaDateFilter()
+        showLast30HargaDays()
       }
 
-      const resTkpi = await fetch('http://127.0.0.1:5001/api/data/tkpi')
+      const resTkpi = await fetch('/api/data/tkpi')
       const jsonTkpi = await resTkpi.json()
       if (jsonTkpi.status === 'success' && jsonTkpi.data) {
         tkpiList.value = jsonTkpi.data
       }
 
-      const resAkg = await fetch('http://127.0.0.1:5001/api/data/akg')
+      const resAkg = await fetch('/api/data/akg')
       const jsonAkg = await resAkg.json()
       if (jsonAkg.status === 'success' && jsonAkg.data) {
         akgList.value = jsonAkg.data
@@ -347,7 +479,8 @@ const fetchExistingData = async () => {
       isUploaded.value = false
       statsList.value = []
       commodityColumns.value = []
-      previewHarga.value = []
+      hargaRows.value = []
+      clearHargaDateFilter()
       tkpiList.value = []
       akgList.value = []
       totalRowsHarga.value = 0
@@ -374,7 +507,7 @@ const handleFileSelect = async (event) => {
 
     isUploading.value = true
     try {
-      const response = await fetch('http://127.0.0.1:5001/api/upload', {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -384,10 +517,17 @@ const handleFileSelect = async (event) => {
         showUploadModal.value = false
         if (result.stats) statsList.value = result.stats
         if (result.commodities) commodityColumns.value = result.commodities
-        if (result.preview_harga) previewHarga.value = result.preview_harga
         if (result.preview_tkpi) tkpiList.value = result.preview_tkpi
         if (result.preview_akg) akgList.value = result.preview_akg
         if (result.total_rows_harga) totalRowsHarga.value = result.total_rows_harga
+        const resHarga = await fetch('/api/data/harga_pangan')
+        const jsonHarga = await resHarga.json()
+        if (jsonHarga.status === 'success' && jsonHarga.data) {
+          hargaRows.value = jsonHarga.data
+          totalRowsHarga.value = jsonHarga.data.length
+          clearHargaDateFilter()
+          showLast30HargaDays()
+        }
         alert(result.message)
       } else {
         alert('Gagal mengunggah file: ' + result.message)
@@ -407,7 +547,7 @@ const closeUploadModal = () => {
 
 const proceedToARIMA = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:5001/api/forecast', {
+    const response = await fetch('/api/forecast', {
       method: 'POST'
     })
     const result = await response.json()

@@ -58,7 +58,9 @@ Buka jendela Terminal / Command Prompt KEDUA (baru), lalu jalankan perintah:
 
 Keterangan:
 - Backend REST API akan aktif di:
-  http://127.0.0.1:5001
+  http://127.0.0.1:5051
+  (Frontend Vite mem-proxy /api ke alamat ini — jangan pakai port 5001 jika
+   ada proyek lain yang sudah memakainya.)
 - JANGAN tutup jendela terminal ini selama aplikasi digunakan.
 
 --------------------------------------------------------------------------------

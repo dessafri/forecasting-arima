@@ -234,7 +234,7 @@ const rawCommodities = ref([]);
 
 const fetchModulData = async () => {
   try {
-    const res = await fetch('http://127.0.0.1:5001/api/dashboard/summary');
+    const res = await fetch('/api/dashboard/summary');
     const json = await res.json();
     if (json.status === 'success' && json.has_data && json.commodities.length > 0) {
       hasData.value = true;

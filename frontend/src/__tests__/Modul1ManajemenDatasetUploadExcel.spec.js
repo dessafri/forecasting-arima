@@ -42,24 +42,40 @@ describe('Modul1ManajemenDatasetUploadExcel View', () => {
   })
 
   it('renders statistics table when dataset is loaded', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({
-        status: 'success',
-        stats: [
-          {
-            komoditas: 'Beras Premium',
-            n: 90,
-            mean: 14500.0,
-            std: 150.0,
-            min: 14200.0,
-            max: 14800.0,
-            cv: 1.03,
-            satuan: 'Kilogram (kg)',
-            status: 'Valid (Lolos ARIMA)'
-          }
-        ],
-        commodities: ['Beras Premium']
-      })
+    global.fetch = vi.fn((url) => {
+      if (String(url).includes('/api/data/stats')) {
+        return Promise.resolve({
+          json: () => Promise.resolve({
+            status: 'success',
+            stats: [
+              {
+                komoditas: 'Beras Premium',
+                n: 90,
+                mean: 14500.0,
+                std: 150.0,
+                min: 14200.0,
+                max: 14800.0,
+                cv: 1.03,
+                satuan: 'Kilogram (kg)',
+                status: 'Valid (Lolos ARIMA)'
+              }
+            ],
+            commodities: ['Beras Premium']
+          })
+        })
+      }
+      if (String(url).includes('/api/data/harga_pangan')) {
+        return Promise.resolve({
+          json: () => Promise.resolve({
+            status: 'success',
+            data: [
+              { Tanggal: '2026-10-01', 'Beras Premium': 14000 },
+              { Tanggal: '2026-10-31', 'Beras Premium': 14200 }
+            ]
+          })
+        })
+      }
+      return Promise.resolve({ json: () => Promise.resolve({ status: 'success', data: [] }) })
     })
 
     const wrapper = mount(Modul1ManajemenDatasetUploadExcel, {
@@ -79,5 +95,7 @@ describe('Modul1ManajemenDatasetUploadExcel View', () => {
     expect(wrapper.text()).toContain('Beras Premium')
     expect(wrapper.text()).toContain('14.500')
     expect(wrapper.text()).toContain('Valid (Lolos ARIMA)')
+    expect(wrapper.text()).toContain('Menampilkan')
+    expect(wrapper.find('#harga-date-from').exists()).toBe(true)
   })
 })

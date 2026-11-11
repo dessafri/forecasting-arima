@@ -66,12 +66,13 @@ if not exist "frontend\node_modules" (
 :: 5. Jalankan backend dan frontend
 echo.
 echo ========================================================
-echo  Backend Server  : http://127.0.0.1:5001
+echo  Backend Server  : http://127.0.0.1:5051
 echo  Frontend Web    : http://localhost:5173
 echo ========================================================
 echo.
 
-start "Nutricast Backend Server (Port 5001)" /d "%~dp0backend" cmd /k "%PYTHON_CMD% app.py"
+set NUTRICAST_PORT=5051
+start "Nutricast Backend Server (Port 5051)" /d "%~dp0backend" cmd /k "set NUTRICAST_PORT=5051 && %PYTHON_CMD% app.py"
 start "Nutricast Frontend (Port 5173)" /d "%~dp0frontend" cmd /k "npm run dev"
 
 timeout /t 4 /nobreak >nul

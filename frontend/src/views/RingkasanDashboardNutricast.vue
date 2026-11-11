@@ -575,7 +575,10 @@ const activeDiagnostic = computed(() => {
 
 const fetchDashboardData = async () => {
   try {
-    const res = await fetch('http://127.0.0.1:5001/api/dashboard/summary');
+    const res = await fetch('/api/dashboard/summary');
+    if (!res.ok) {
+      throw new Error(`API ${res.status}`);
+    }
     const json = await res.json();
     if (json.status === 'success' && json.has_data) {
       dashboardData.value = json;
@@ -596,8 +599,8 @@ onMounted(() => {
 const runPipeline = async () => {
   isPipelineRunning.value = true;
   try {
-    await fetch('http://127.0.0.1:5001/api/forecast', { method: 'POST' });
-    await fetch('http://127.0.0.1:5001/api/gwo', { method: 'POST' });
+    await fetch('/api/forecast', { method: 'POST' });
+    await fetch('/api/gwo', { method: 'POST' });
     await fetchDashboardData();
     alert('Pipeline Forecasting ARIMA & Optimasi GWO berhasil dijalankan ulang!');
   } catch (err) {
@@ -689,12 +692,18 @@ const chartData = computed(() => {
       }
 
       const pctStr = (pt.pct_change > 0 ? '+' : '') + (pt.pct_change || 0) + '% dari ' + (baselineDate || 'awal periode');
+      const dayOffset = Number(pt.day);
       const directIso = toIsoDate(pt.date);
-      const isoDate = directIso || (
-        anchorIso != null && Number.isFinite(Number(pt.day))
-          ? shiftIsoDate(anchorIso, Number(pt.day))
-          : null
-      );
+      // Forecast labels must continue from the last actual data date (T+n), not stale calendar rows in hasil_forecast.
+      const isoDate = (
+        pt.type === 'forecast' && anchorIso != null && Number.isFinite(dayOffset) && dayOffset > 0
+      )
+        ? shiftIsoDate(anchorIso, dayOffset)
+        : (directIso || (
+          anchorIso != null && Number.isFinite(dayOffset)
+            ? shiftIsoDate(anchorIso, dayOffset)
+            : null
+        ));
 
       return {
         ...pt,

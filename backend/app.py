@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import sqlite3
 import os
+from datetime import datetime, timedelta
 import pandas as pd
 
 app = Flask(__name__)
@@ -14,9 +15,37 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
+def shift_calendar_date(date_value, days):
+    """Return YYYY-MM-DD string `days` after `date_value` (historic anchor for forecast horizon)."""
+    try:
+        base = datetime.strptime(str(date_value)[:10], '%Y-%m-%d')
+    except (TypeError, ValueError):
+        return None
+    return (base + timedelta(days=int(days))).strftime('%Y-%m-%d')
+
+def normalize_harga_sheet(df_harga):
+    """Drop stray Excel columns and sort by Tanggal ascending."""
+    df = df_harga.copy()
+    unnamed = [c for c in df.columns if str(c).strip().lower().startswith('unnamed')]
+    if unnamed:
+        df = df.drop(columns=unnamed)
+    if 'Tanggal' in df.columns:
+        df['Tanggal'] = pd.to_datetime(df['Tanggal'], errors='coerce')
+        df = df.dropna(subset=['Tanggal'])
+        df['Tanggal'] = df['Tanggal'].dt.strftime('%Y-%m-%d')
+        df = df.sort_values('Tanggal').reset_index(drop=True)
+    return df
+
+
 def compute_stats_from_df(df_harga):
     stats = []
-    numeric_cols = [c for c in df_harga.columns if c != 'Tanggal' and pd.api.types.is_numeric_dtype(df_harga[c])]
+    numeric_cols = [
+        c for c in df_harga.columns
+        if c != 'Tanggal'
+        and not str(c).strip().lower().startswith('unnamed')
+        and pd.api.types.is_numeric_dtype(df_harga[c])
+    ]
     for col in numeric_cols:
         series = df_harga[col].dropna()
         if len(series) == 0:
@@ -48,7 +77,7 @@ def health_check():
 def get_harga_pangan():
     try:
         conn = get_db_connection()
-        data = conn.execute('SELECT * FROM harga_pangan LIMIT 200').fetchall()
+        data = conn.execute('SELECT * FROM harga_pangan ORDER BY Tanggal ASC').fetchall()
         conn.close()
         return jsonify({"status": "success", "data": [dict(ix) for ix in data]})
     except Exception as e:
@@ -100,9 +129,7 @@ def upload_data():
         # 1. Sheet 1: Harga Komoditas / Pangan
         sheet1_candidates = [s for s in sheets if 'harga' in s.lower()]
         sheet1 = sheet1_candidates[0] if sheet1_candidates else sheets[0]
-        df_harga = pd.read_excel(xls, sheet_name=sheet1)
-        if 'Tanggal' in df_harga.columns:
-            df_harga['Tanggal'] = pd.to_datetime(df_harga['Tanggal']).dt.strftime('%Y-%m-%d')
+        df_harga = normalize_harga_sheet(pd.read_excel(xls, sheet_name=sheet1))
             
         # 2. Sheet 2: TKPI
         sheet2_candidates = [s for s in sheets if 'tkpi' in s.lower()]
@@ -132,7 +159,9 @@ def upload_data():
         conn.close()
 
         stats, numeric_cols = compute_stats_from_df(df_harga)
-        preview_harga = df_harga.head(10).to_dict(orient='records')
+        preview_harga = df_harga.tail(5).to_dict(orient='records')
+        date_start = str(df_harga['Tanggal'].iloc[0]) if len(df_harga) else ""
+        date_end = str(df_harga['Tanggal'].iloc[-1]) if len(df_harga) else ""
         preview_tkpi = df_tkpi.head(10).to_dict(orient='records') if not df_tkpi.empty else []
         preview_akg = df_akg.head(10).to_dict(orient='records') if not df_akg.empty else []
 
@@ -145,6 +174,8 @@ def upload_data():
             "preview_tkpi": preview_tkpi,
             "preview_akg": preview_akg,
             "total_rows_harga": len(df_harga),
+            "date_start": date_start,
+            "date_end": date_end,
             "commodities": numeric_cols
         })
     except Exception as e:
@@ -383,14 +414,12 @@ def get_dashboard_summary():
             # Forecast points (30 horizon days)
             last_p = float(hist_vals[-1])
             fc_vals = []
-            fc_dates = []
-            
+            last_hist_date = hist_dates[-1] if hist_dates else None
+
             # Check if column is in uploaded hasil_forecast
             if not df_fc.empty and col in df_fc.columns:
                 fc_series = df_fc[col].dropna().tolist()[:30]
                 fc_vals = [float(v) for v in fc_series]
-                if 'Tanggal' in df_fc.columns:
-                    fc_dates = df_fc['Tanggal'].dropna().tolist()[:len(fc_vals)]
 
             if not fc_vals:
                 # Generate realistic autoregressive dynamic projection
@@ -405,11 +434,11 @@ def get_dashboard_summary():
                     wave = math.sin((f_idx + idx * 2) * 0.4) * vol_noise
                     cur_p = cur_p + (drift * (damping ** f_idx)) + wave
                     fc_vals.append(round(cur_p, 0))
-                    fc_dates.append(f"T+{f_idx}")
 
             # Append forecast points with confidence intervals
             ci_spread = max(std_val * 0.8, last_p * 0.02)
-            for f_idx, (f_date, f_p) in enumerate(zip(fc_dates, fc_vals), start=1):
+            for f_idx, f_p in enumerate(fc_vals, start=1):
+                f_date = shift_calendar_date(last_hist_date, f_idx) if last_hist_date else f"T+{f_idx}"
                 f_float = float(f_p)
                 ci_margin = ci_spread * (1 + (f_idx / 30.0) * 0.5)
                 pts.append({
@@ -519,5 +548,6 @@ def run_gwo():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    port = int(os.environ.get('NUTRICAST_PORT', os.environ.get('PORT', 5051)))
+    app.run(debug=True, host='127.0.0.1', port=port)
 

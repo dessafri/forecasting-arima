@@ -37,6 +37,7 @@ fi
 
 # 3. Jalankan Backend & Frontend
 echo "[3/3] Menjalankan Server Backend & Frontend..."
+export NUTRICAST_PORT=5051
 (cd backend && $PYTHON_CMD app.py) &
 BACKEND_PID=$!
 

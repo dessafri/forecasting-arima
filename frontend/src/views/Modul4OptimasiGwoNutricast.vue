@@ -1530,7 +1530,7 @@ const pmtList = ref([]);
 
 const fetchModulData = async () => {
   try {
-    const res = await fetch("http://127.0.0.1:5001/api/dashboard/summary");
+    const res = await fetch("/api/dashboard/summary");
     const json = await res.json();
     if (
       json.status === "success" &&
@@ -1747,7 +1747,7 @@ const handleSvgClick = (evt) => {
 const runGwoOptimization = async () => {
   isGwoRunning.value = true;
   try {
-    const res = await fetch("http://127.0.0.1:5001/api/gwo", {
+    const res = await fetch("/api/gwo", {
       method: "POST",
     });
     const json = await res.json();

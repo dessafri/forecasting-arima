@@ -200,6 +200,31 @@ describe('RingkasanDashboardNutricast View', () => {
     expect(chartText).not.toContain('T+15')
   })
 
+  it('labels forecast months after the last historic date, not stale forecast-sheet dates', async () => {
+    const wrapper = mountDashboard([
+      {
+        id: 'beras',
+        name: 'Beras Premium',
+        color: '#006948',
+        points: [
+          { day: -2, date: '2026-10-02', price: 14000, pct_change: 0, type: 'historic' },
+          { day: -1, date: '2026-10-16', price: 14100, pct_change: 0.7, type: 'historic' },
+          { day: 0, date: '2026-10-31', price: 14200, pct_change: 1.4, type: 'historic' },
+          { day: 15, date: '2026-07-15', price: 14600, pct_change: 4.2, type: 'forecast', ci_lower: 14200, ci_upper: 15000 },
+          { day: 30, date: '2026-07-30', price: 14800, pct_change: 5.7, type: 'forecast', ci_lower: 14400, ci_upper: 15200 }
+        ]
+      }
+    ])
+
+    await flushPromises()
+
+    const chartText = wrapper.find('svg').text()
+    expect(chartText).toContain('31 Okt 2026')
+    expect(chartText).toContain('30 Nov 2026')
+    expect(chartText).not.toContain('15 Jul 2026')
+    expect(chartText).not.toContain('30 Jul 2026')
+  })
+
   it('resolves a T+ label from the last historic date', async () => {
     const wrapper = mountDashboard([
       {

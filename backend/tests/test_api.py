@@ -159,6 +159,30 @@ class TestFlaskAPI(unittest.TestCase):
         self.assertEqual(json_data['status'], 'success')
         self.assertEqual(json_data['total_rows_harga'], 3)
         self.assertIn('Beras Premium', json_data['commodities'])
+        self.assertEqual(json_data['preview_harga'][-1]['Tanggal'], '2024-01-03')
+
+    def test_harga_pangan_returns_all_rows_in_chronological_order(self):
+        from datetime import date, timedelta
+
+        conn = sqlite3.connect(self.db_path)
+        conn.execute('DELETE FROM harga_pangan')
+        start = date(2024, 1, 1)
+        for i in range(250):
+            d = (start + timedelta(days=i)).isoformat()
+            conn.execute(
+                "INSERT INTO harga_pangan (Tanggal, Beras, Telur_Ayam, Daging_Ayam) "
+                "VALUES (?, ?, ?, ?)",
+                (d, 14000 + i, 28000, 35000),
+            )
+        conn.commit()
+        conn.close()
+
+        res = self.client.get('/api/data/harga_pangan')
+        data = json.loads(res.data)
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(len(data['data']), 250)
+        self.assertEqual(data['data'][0]['Tanggal'], '2024-01-01')
+        self.assertEqual(data['data'][-1]['Tanggal'], (start + timedelta(days=249)).isoformat())
 
     def test_dashboard_summary_with_data(self):
         # Insert time-series rows
